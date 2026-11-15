@@ -1,0 +1,8 @@
+name = "bili-toy-ai-relay"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+
+# 免费套餐即可，无需 KV / D1 / R2
+# 部署后执行：
+#   wrangler secret put ZHIPU_API_KEY
+#   wrangler secret put TOY_TOKEN      # 可选
