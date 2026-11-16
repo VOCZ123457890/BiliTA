@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
 <meta name="theme-color" content="#EEF6FF" id="meta-theme" />
-<title>小破站 AI · 免费对话</title>
+<title>BiliTA · BiliBiliToyAi</title>
 <script src="https://s1.hdslb.com/bfs/seed/toy/app/sdk/toy-sdk.js"></script>
 <style>
   /* ============================================================
@@ -621,6 +621,58 @@
   .kit-li.tx{padding-left:0;color:var(--ink);}
   .kit-card .muted{font-size:11.5px;color:var(--sub);}
   .kit-loading{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--sub);padding:12px 2px;}
+
+  /* ============ v3.7：图片输入 / 性能 ============ */
+  .ic-act{
+    width:34px;height:34px;flex:0 0 34px;border-radius:11px;display:grid;place-items:center;
+    color:#8E95A0;background:#F4F6F8;margin-bottom:2px;transition:background .16s,color .16s,transform .16s;
+  }
+  .ic-act:hover{background:var(--brand-soft);color:var(--brand-deep);}
+  .ic-act:active{transform:scale(.94);}
+  .ic-act.on{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;}
+  .ic-act svg{width:18px;height:18px;}
+
+  .img-prev{
+    display:flex;align-items:center;gap:9px;margin:0 0 8px;padding:7px 9px;
+    background:#fff;border:1.5px solid var(--brand-line);border-radius:14px;
+    box-shadow:0 4px 14px rgba(24,25,28,.05);
+  }
+  .img-prev[hidden]{display:none;}
+  .img-prev img{width:44px;height:44px;border-radius:9px;object-fit:cover;flex:0 0 44px;background:#F1F3F5;}
+  .img-prev .ip-t{flex:1;min-width:0;line-height:1.45;}
+  .img-prev .ip-t b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .img-prev .ip-t span{font-size:10.5px;color:var(--sub);}
+  .img-prev .ip-x{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:#A9AFB8;background:#F4F6F8;flex:0 0 26px;}
+  .img-prev .ip-x:active{background:#FDEBEE;color:#E0455A;}
+  .img-prev .ip-x svg{width:12px;height:12px;}
+
+  .msg .bubble .pic{
+    display:block;width:186px;max-width:100%;border-radius:11px;margin:0 0 7px;
+    border:1px solid rgba(0,0,0,.05);background:#fff;
+  }
+  .msg.user .bubble .pic{margin-left:auto;}
+
+  /* 流式输出：只追加文本节点，避免每帧重解析 Markdown */
+  .a-body.streaming{white-space:pre-wrap;word-break:break-word;}
+  .a-body.streaming::after{
+    content:"";display:inline-block;width:6px;height:14px;margin-left:2px;vertical-align:-2px;
+    border-radius:2px;background:var(--brand);animation:blink 1s steps(2) infinite;
+  }
+  @keyframes blink{50%{opacity:0;}}
+
+  /* ---- 性能：触屏设备关掉实时毛玻璃（iPad 上这是最大的一笔开销） ---- */
+  .msgs{-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+  html[data-form="phone"] #app,
+  html[data-form="tablet"] #app{
+    backdrop-filter:none;-webkit-backdrop-filter:none;
+    background:linear-gradient(180deg,#FFFFFF 0%,rgba(255,255,255,.96) 60%,rgba(255,255,255,.92) 100%);
+  }
+  html[data-form="phone"] .mask,
+  html[data-form="tablet"] .mask{backdrop-filter:none;background:rgba(20,21,23,.5);}
+  html[data-form="phone"] .toast,
+  html[data-form="tablet"] .toast{backdrop-filter:none;}
+  html[data-form="phone"] .topbar,
+  html[data-form="tablet"] .topbar{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(255,255,255,.97);}
 </style>
 </head>
 <body>
@@ -632,7 +684,7 @@
       <div class="brand">
         <div class="logo" data-mascot></div>
         <div>
-          <h1>小破站 AI</h1>
+          <h1>BiliTA</h1>
           <div class="sub"><span class="dot" id="dot-gate"></span><span id="gate-status">公益通道检测中…</span></div>
         </div>
       </div>
@@ -643,8 +695,8 @@
 
     <div class="gate">
       <div class="gate-mascot" data-mascot></div>
-      <h1>和 <span class="grad">小破站 AI</span><br>聊两句</h1>
-      <p class="lead">接的是智谱 GLM 系列，额度由作者出。<br>不用注册、不用 API Key、打开就能聊。</p>
+      <h1>和 <span class="grad">BiliTA</span><br>聊两句</h1>
+      <p class="lead">BiliBiliToyAi · 接的是智谱 GLM 系列，额度由作者出。<br>不用注册、不用 API Key、打开就能聊。</p>
       <div class="chips">
         <span class="c">GLM-4-Flash</span>
         <span class="c">1M 上下文</span>
@@ -671,7 +723,7 @@
         <div class="rail-brand">
           <div class="logo" data-mascot></div>
           <div class="rt">
-            <div class="rn">小破站 AI</div>
+            <div class="rn">BiliTA</div>
             <div class="rs">B站 Toy · 公益免费</div>
           </div>
         </div>
@@ -741,7 +793,7 @@
           <div class="brand">
             <div class="logo" data-mascot></div>
             <div>
-              <h1>小破站 AI <span class="tag-free">FREE</span></h1>
+              <h1>BiliTA <span class="tag-free">FREE</span></h1>
               <div class="sub"><span class="dot" id="dot-chat"></span><span id="chat-status">公益通道</span></div>
             </div>
           </div>
@@ -772,12 +824,26 @@
         <div class="msgs" id="msgs"></div>
 
         <div class="composer">
+          <div class="img-prev" id="img-prev" hidden>
+            <img id="img-prev-img" alt="待发送的图片" />
+            <div class="ip-t">
+              <b id="img-prev-name">图片</b>
+              <span id="img-prev-size"></span>
+            </div>
+            <button class="ip-x" id="img-prev-x" aria-label="移除图片">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
           <div class="box" id="box">
+            <button class="ic-act" id="btn-img" aria-label="发图片" title="发图片 / 拍照看图">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="m21 16-5-5L5 20"/></svg>
+            </button>
             <textarea id="input" rows="1" placeholder="问点什么…" maxlength="4000"></textarea>
             <button class="send" id="btn-send" disabled aria-label="发送">
               <svg id="send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
             </button>
           </div>
+          <input type="file" id="file-img" accept="image/*" hidden />
           <div class="hint">
             <div class="left">
               <span class="model-pill"><i></i><span id="model-pill">GLM-4-Flash</span></span>
@@ -796,7 +862,7 @@
   <section class="view" id="view-bye">
     <div class="bye">
       <div class="m" data-mascot></div>
-      <h2>已退出小破站 AI</h2>
+      <h2>已退出 BiliTA</h2>
       <p id="bye-tip">感谢使用。对用户永久免费、无广告，模型额度由作者垫付。</p>
       <button class="cta" style="max-width:260px;height:46px;" id="btn-reenter">重新进入</button>
       <button id="btn-back-bili" style="margin-top:10px;max-width:260px;width:100%;height:44px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--ink-2);font-size:13px;font-weight:700;cursor:pointer;">返回 B站 Toy 广场</button>
@@ -871,17 +937,11 @@
       </div>
 
       <div class="sect">
-        <div class="label">投币解锁 <span class="tag-free" style="background:#FFF1E6;color:#C2410C;">v4</span></div>
-        <div class="desc">正式版起，GLM-5.3 系列将改为投币解锁：<b>1 枚硬币 → 100 点创作激励 → 1 天额度</b>。当前 debug 版全量开放，不扣币。</div>
-        <button class="btn-line block" id="btn-coin" style="border-color:#FFE0C2;background:#FFF9F3;color:#C2410C;">投币解锁（即将开放）</button>
-      </div>
-
-      <div class="sect">
         <div class="label">关于</div>
         <div class="desc" style="margin-bottom:0;line-height:1.8;">
-          小破站 AI · <span id="ver-line">v3.6.0</span><br>
-          直连智谱 BigModel，不经过中转。对用户免费、无广告、不收集对话。<br>
-          Powered by Toy JS SDK.
+          BiliTA · <span id="ver-line">v3.7.0</span><br>
+          全称 BiliBiliToyAi · 直连智谱 BigModel。<br>
+          对用户免费、无广告、不收集对话。Powered by Toy JS SDK.
         </div>
       </div>
 
@@ -922,7 +982,7 @@
       <div class="sect" style="padding-bottom:4px;">
         <div class="label">关于</div>
         <div class="desc" style="margin-bottom:0;line-height:1.8;">
-          小破站 AI · <span id="ver-line-2">v3.6.0</span><br>
+          BiliTA · <span id="ver-line-2">v3.7.0</span><br>
           对话只存本机，不上传服务器；生成内容由 AI 产生，请自行判断。
         </div>
       </div>
@@ -1012,7 +1072,8 @@
       <div class="sect">
         <div class="label">版本记录</div>
         <div class="desc" style="margin-bottom:0;line-height:1.9;">
-          <b>v3.6.0</b>（当前）· 多会话管理（最多 30 个，本地保存）+ 圆桌讨论（一题三答）+ 创作四件套（标题/简介/弹幕/封面）<br>
+          <b>v3.7.0</b>（当前）· 改名 BiliTA / BiliBiliToyAi；支持发图片看图（GLM-4V）；付费档收进这里；流式渲染与 iPad 性能优化<br>
+          <b>v3.6.0</b> · 多会话管理（最多 30 个，本地保存）+ 圆桌讨论（一题三答）+ 创作四件套（标题/简介/弹幕/封面）<br>
           <b>v3.5.3</b> · 退出修复：SDK 失败后自动 history.back 兜底，退出页显示诊断 + 返回广场按钮<br>
           <b>v3.5.2</b> · 空态/欢迎页布局优化：快捷卡片改用 SVG 图标，间距收紧<br>
           <b>v3.5.1</b> · 修复嵌入窄栏布局：按实际容器宽度选档，新增超窄嵌入档<br>
@@ -1025,9 +1086,12 @@
       </div>
 
       <div class="sect">
-        <div class="label">开发者开关</div>
-        <div class="desc">预览 v4 的投币门槛：开启后付费模型显示为锁定。</div>
-        <button class="btn-line block" id="legacy-coingate">投币门槛：关闭</button>
+        <div class="label">付费 / 投币（暂停中）<span class="tag-free" style="background:#FFF1E6;color:#C2410C;">v4</span></div>
+        <div class="desc">这部分功能暂时封存，正常界面不会出现。开启「投币门槛」后，设置里的 GLM-5.3 系列才会重新出现并显示为未解锁。</div>
+        <div class="desc" style="color:#C2410C;">原计划：<b>1 枚硬币 → 100 点创作激励 → 1 天额度</b>，当前不扣币、不收费。</div>
+        <button class="btn-line block" id="legacy-coingate" style="margin-bottom:8px;">投币门槛：关闭</button>
+        <button class="btn-line block" id="btn-coin" style="margin-bottom:8px;border-color:#FFE0C2;background:#FFF9F3;color:#C2410C;">投币解锁（未开放）</button>
+        <button class="btn-line block" id="btn-paid-reset">把模型重置为免费档</button>
       </div>
     </div>
   </div>
@@ -1050,7 +1114,7 @@
 
 <script>
 /* ============================================================
- * 小破站 AI · B站 Toy
+ * BiliTA · B站 Toy
  * 前端：原生 JS，无依赖（只用官方 toy-sdk.js）
  * 后端：/v1/chat 中转（见 worker.js / server.js）
  * ============================================================ */
@@ -1059,7 +1123,7 @@
 
   /* ---------------- 配置（部署时改这里） ---------------- */
   const CONFIG = {
-    VERSION: 'v3.6.0',
+    VERSION: 'v3.7.0',
     CHANNEL: 'debug',
 
     // 直连智谱开放平台（不经过任何中转）
@@ -1074,7 +1138,7 @@
     FALLBACK_MODEL: 'glm-4-flash-250414',
 
     MAX_HISTORY: 16,
-    APP_NAME: '小破站 AI',
+    APP_NAME: 'BiliTA',
     LEGACY_TAPS: 7,
 
     /* 季节主题：'auto' 按月份自动（6–9 月暖橙，其余蓝白）
@@ -1094,15 +1158,20 @@
     RELAY_TOKEN: ''
   };
 
-  // plan: free = 官方 0 元档；paid = 按量计费（作者垫付 / 未来投币解锁）
+  // plan: free = 官方 0 元档；paid = 按量计费
+  // hidden: 默认不出现在设置里，只在旧版工具箱打开「投币门槛」后才显示
   const MODELS = {
     'glm-5.3': {
       name: 'GLM-5.3', full: 'GLM-5.3', ctx: '1M 上下文',
-      plan: 'paid', price: '8 / 28 元每百万 tokens', badge: '推荐'
+      plan: 'paid', price: '8 / 28 元每百万 tokens', badge: '推荐', hidden: true
     },
     'glm-5.3-flash': {
       name: 'GLM-5.3-Flash', full: 'GLM-5.3-Flash', ctx: '1M · 原生多模态',
-      plan: 'paid', price: '0.8 / 2.8 元每百万 tokens', badge: '投币'
+      plan: 'paid', price: '0.8 / 2.8 元每百万 tokens', badge: '投币', hidden: true
+    },
+    'glm-4v-flash': {
+      name: 'GLM-4V-Flash', full: 'GLM-4V-Flash', ctx: '视觉 · 看图说话',
+      plan: 'free', price: '官方免费', badge: '看图'
     },
     'glm-4.7-flash': {
       name: 'GLM-4.7-Flash', full: 'GLM-4.7-Flash', ctx: '200K 上下文',
@@ -1121,10 +1190,10 @@
 
   const PERSONAS = {
     default: {
-      name: '小破站助手',
+      name: 'BiliTA 助手',
       emoji: '🌸',
       desc: '热心、懂梗、说人话',
-      prompt: '你是「小破站 AI」，B站生态里的一个热心助手。说话自然、口语化，偶尔用一点点网络梗但不油腻。回答要准确、简洁、有结构，能一句说清就别绕三段。用户用中文你就用中文。不要自称"人工智能助手"，不要过度客套。'
+      prompt: '你是「BiliTA」，B站生态里的一个热心助手。说话自然、口语化，偶尔用一点点网络梗但不油腻。回答要准确、简洁、有结构，能一句说清就别绕三段。用户用中文你就用中文。不要自称"人工智能助手"，不要过度客套。'
     },
     meme: {
       name: '弹幕老哥',
@@ -1179,6 +1248,7 @@
     theme: CONFIG.THEME,  // auto | winter | summer
     round: false,         // 圆桌模式（一题三答）
     kitCat: '知识',        // 创作四件套：分区
+    pendingImg: null,     // 待发送图片 {full, thumb, w, h, name}
     online: false,
     stats: { msgs: 0, words: 0, since: Date.now() },
     tpl: null,
@@ -1619,7 +1689,13 @@
       o.list.unshift(cur);
       o.active = cur.id;
     }
-    cur.msgs = S.messages.slice(-40);
+    // 原图 base64 太大，不落盘；历史只留缩略图
+    cur.msgs = S.messages.slice(-40).map((m) => {
+      if (!m.imgFull) return m;
+      const c = Object.assign({}, m);
+      delete c.imgFull;
+      return c;
+    });
     if (S.messages.length) cur.title = titleOf(S.messages);
     cur.mtime = Date.now();
     o.list.sort((a, b) => b.mtime - a.mtime);
@@ -1867,7 +1943,7 @@
     const ava = role === 'user'
       ? '<div class="ava"><img src="' + esc((S.profile && S.profile.avatar) || defaultAvatar()) + '" alt="" onerror="this.style.display=\'none\'"></div>'
       : '<div class="ava bot">' + MASCOT + '</div>';
-    const who = role === 'user' ? ((S.profile && S.profile.nickname) || '我') : ((opts && opts.who) || '小破站 AI');
+    const who = role === 'user' ? ((S.profile && S.profile.nickname) || '我') : ((opts && opts.who) || 'BiliTA');
     const rtag = (opts && opts.rtag) ? '<span class="rtag">' + esc(opts.rtag) + '</span>' : '';
     wrap.innerHTML = ava +
       '<div class="body">' +
@@ -1876,7 +1952,10 @@
       '</div>';
     $('#msgs').appendChild(wrap);
     const bubble = $('.bubble', wrap);
-    bubble.innerHTML = content ? md(content) : '';
+    const pic = (opts && opts.img)
+      ? '<img class="pic" src="' + esc(opts.img) + '" alt="图片" loading="lazy">'
+      : '';
+    bubble.innerHTML = pic + (content ? md(content) : '');
     scrollBottom(true);
     return { wrap, bubble };
   }
@@ -1890,11 +1969,10 @@
   function renderAll() {
     if (!S.messages.length) { renderEmpty(); return; }
     $('#msgs').innerHTML = '';
-    S.messages.forEach((m) => addMsgEl(
-      m.role === 'user' ? 'user' : 'ai',
-      m.content,
-      m.role === 'user' ? null : { who: m.who, rtag: m.rtag }
-    ));
+    S.messages.forEach((m) => {
+      const isUser = m.role === 'user';
+      addMsgEl(isUser ? 'user' : 'ai', m.content, isUser ? { img: m.img } : { who: m.who, rtag: m.rtag });
+    });
     scrollBottom(true);
   }
 
@@ -1920,13 +1998,78 @@
   }
 
   /* ---------------- 输入区 ---------------- */
+  /* ---------------- 图片输入（v3.7） ----------------
+   * 选图 → canvas 压到长边 1280 / JPEG .82（iPad 也能秒出）
+   * 历史里只存 260px 缩略图，原图只在内存活到发送完成
+   * -------------------------------------------------- */
+  const IMG_MAX = 1280, IMG_Q = 0.82, THUMB_MAX = 260, THUMB_Q = 0.6;
+
+  function fileToDataUrl(file) {
+    return new Promise((res, rej) => {
+      const fr = new FileReader();
+      fr.onload = () => res(String(fr.result || ''));
+      fr.onerror = () => rej(new Error('读取图片失败'));
+      fr.readAsDataURL(file);
+    });
+  }
+
+  function loadImgEl(src) {
+    return new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => res(im);
+      im.onerror = () => rej(new Error('图片解析失败'));
+      im.src = src;
+    });
+  }
+
+  function shrinkImg(im, max, q) {
+    const w0 = im.naturalWidth || im.width, h0 = im.naturalHeight || im.height;
+    const scale = Math.min(1, max / Math.max(w0, h0));
+    const w = Math.max(1, Math.round(w0 * scale));
+    const h = Math.max(1, Math.round(h0 * scale));
+    const cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(im, 0, 0, w, h);
+    return { url: cv.toDataURL('image/jpeg', q), w: w, h: h };
+  }
+
+  async function pickImage(file) {
+    if (!file) return;
+    if (!/^image\//.test(file.type)) { toast('只能发图片'); return; }
+    if (file.size > 12 * 1024 * 1024) { toast('图片太大了，换一张 12MB 以内的', 2600); return; }
+    try {
+      const raw = await fileToDataUrl(file);
+      const im = await loadImgEl(raw);
+      const big = shrinkImg(im, IMG_MAX, IMG_Q);
+      const small = shrinkImg(im, THUMB_MAX, THUMB_Q);
+      S.pendingImg = { full: big.url, thumb: small.url, w: big.w, h: big.h, name: file.name || '图片' };
+      renderPendingImg();
+      updateSend();
+    } catch (e) { toast('这张图读不了，换一张试试'); }
+  }
+
+  function renderPendingImg() {
+    const box = $('#img-prev');
+    if (!box) return;
+    const p = S.pendingImg;
+    if (!p) { box.hidden = true; return; }
+    $('#img-prev-img').src = p.thumb;
+    $('#img-prev-name').textContent = p.name;
+    const kb = Math.round(p.full.length * 0.75 / 1024);
+    $('#img-prev-size').textContent = p.w + '×' + p.h + ' · 约 ' + kb + 'KB · 用 GLM-4V 看图';
+    box.hidden = false;
+  }
+
   const input = $('#input');
   function autoGrow() {
     input.style.height = 'auto';
     input.style.height = Math.min(118, input.scrollHeight) + 'px';
   }
   function updateSend() {
-    const empty = !input.value.trim();
+    const empty = !input.value.trim() && !S.pendingImg;
     $('#btn-send').disabled = S.streaming ? false : empty;
     $('#btn-send').classList.toggle('stop', S.streaming);
     $('#send-icon').innerHTML = S.streaming
@@ -1948,16 +2091,45 @@
     handleSend();
   });
 
+  /* ---- 图片按钮 / 选图 / 移除 ---- */
+  const btnImg = $('#btn-img');
+  if (btnImg) btnImg.addEventListener('click', () => { $('#file-img').click(); });
+  const fileImg = $('#file-img');
+  if (fileImg) fileImg.addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    pickImage(f);
+    e.target.value = '';
+  });
+  const imgPrevX = $('#img-prev-x');
+  if (imgPrevX) imgPrevX.addEventListener('click', () => {
+    S.pendingImg = null;
+    renderPendingImg();
+    updateSend();
+  });
+  // 直接粘贴图片（桌面端 & iPad 外接键盘）
+  document.addEventListener('paste', (e) => {
+    if (!$('#view-chat').classList.contains('active')) return;
+    const items = (e.clipboardData && e.clipboardData.items) || [];
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type && /^image\//.test(items[i].type)) {
+        const f = items[i].getAsFile();
+        if (f) { pickImage(f); toast('已粘贴图片'); }
+        break;
+      }
+    }
+  });
+
   /* ---------------- 发送 ---------------- */
   async function handleSend() {
     const text = input.value.trim();
-    if (!text || S.streaming) return;
+    const img = S.pendingImg;
+    if ((!text && !img) || S.streaming) return;
 
     // 内容安全：直接调用（isSupport 在无原生桥环境会挂起，拖慢每次发送）
     // web 端 SDK 会立即抛 unsupported，App 内正常返回；超时/失败一律放行
     try {
       if (hasToy() && typeof toy.checkInputSafety === 'function') {
-        const r = await withTimeout(toy.checkInputSafety({ text: text, scene: 'chat' }), 900, null);
+        const r = await withTimeout(toy.checkInputSafety({ text: text || '图片', scene: 'chat' }), 900, null);
         if (r && r.status === 'rejected') {
           toast('这句话被安全策略拦下了，换个说法试试', 2600);
           return;
@@ -1966,20 +2138,48 @@
     } catch (e) { /* web 端 unsupported / 超时：放行 */ }
 
     input.value = '';
+    S.pendingImg = null;
+    renderPendingImg();
     autoGrow();
     updateSend();
 
-    S.messages.push({ role: 'user', content: text });
+    const msg = { role: 'user', content: text };
+    if (img) {
+      msg.img = img.thumb;      // 缩略图：可存历史
+      msg.imgFull = img.full;   // 原图：只在内存，发完即弃
+      msg.imgName = img.name;
+      msg.imgW = img.w;
+      msg.imgH = img.h;
+    }
+    S.messages.push(msg);
+
     if (!S.messages.some((m) => m.role === 'assistant')) renderAll();
     else {
       if ($('.empty')) $('#msgs').innerHTML = '';
-      addMsgEl('user', text);
+      addMsgEl('user', text, { img: msg.img });
     }
     saveChat();
     bumpStats(text.length, 1);
 
-    if (S.round) { await runRoundtable(); return; }
+    if (S.round && !img) { await runRoundtable(); return; }
     await runAssistant();
+  }
+
+  // 内部消息 → 接口格式。只有「本轮最后一条带图」才走多模态，
+  // 历史里的图降级成文字说明，避免每轮都重传 base64 把请求撑大
+  function toApiMsg(m, withImg) {
+    if (m.role === 'assistant') return { role: 'assistant', content: m.content || '' };
+    if (withImg && m.imgFull) {
+      return {
+        role: 'user',
+        content: [
+          { type: 'image_url', image_url: { url: m.imgFull } },
+          { type: 'text', text: m.content || '看看这张图，说说里面有什么。' }
+        ]
+      };
+    }
+    if (m.img) return { role: 'user', content: (m.content || '') + '\n（附图：' + (m.imgName || '图片') + '）' };
+    return { role: 'user', content: m.content || '' };
   }
 
   async function runAssistant() {
@@ -1987,63 +2187,126 @@
     S.streaming = true;
     updateSend();
 
-    const ctx = S.messages.slice(-CONFIG.MAX_HISTORY).filter((m) => m.role === 'user' || m.role === 'assistant');
+    const raw = S.messages.slice(-CONFIG.MAX_HISTORY).filter((m) => m.role === 'user' || m.role === 'assistant');
+    const lastMsg = raw[raw.length - 1] || {};
+    const hasImg = !!(lastMsg.imgFull && lastMsg.role === 'user');
+
     const holder = addMsgEl('ai', '');
     const bubble = holder.bubble;
     bubble.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
 
     let answer = '', reason = '';
-    let thinkingEl = null, thinkBody = null, answerEl = null;
-    let raf = 0, lastPaint = 0;
+    let answerEl = null, thinkEl = null, thinkBody = null;
+    let painted = 0, thinkPainted = 0;
+    let raf = 0;
 
+    // 关键性能点：流式只往 DOM 里追加新增的文本节点，
+    // 不做 md() 全量重解析 + innerHTML 整体替换（长回答时这是 O(n²)）
     const paint = () => {
       if (raf) return;
       raf = requestAnimationFrame(() => {
         raf = 0;
         if (!bubble.isConnected) return;
-        let html = '';
+
         if (reason) {
-          html += '<details class="thinking"' + (answer ? '' : ' open') + '><summary>🧠 思考过程</summary><div class="t-body">' + esc(reason) + '</div></details>';
+          if (!thinkEl) {
+            const d = document.createElement('details');
+            d.className = 'thinking';
+            d.open = true;
+            d.innerHTML = '<summary>🧠 思考过程</summary><div class="t-body"></div>';
+            bubble.insertBefore(d, answerEl);
+            thinkEl = d;
+            thinkBody = $('.t-body', d);
+          }
+          if (reason.length > thinkPainted) {
+            thinkBody.appendChild(document.createTextNode(reason.slice(thinkPainted)));
+            thinkPainted = reason.length;
+          }
+          if (answer && thinkEl.open) thinkEl.open = false;
         }
-        html += '<div class="a-body">' + md(answer) + (S.streaming ? '<span class="cursor"></span>' : '') + '</div>';
-        bubble.innerHTML = html;
+
+        if (!answerEl) {
+          answerEl = document.createElement('div');
+          answerEl.className = 'a-body streaming';
+          bubble.appendChild(answerEl);
+        }
+        if (answer.length > painted) {
+          answerEl.appendChild(document.createTextNode(answer.slice(painted)));
+          painted = answer.length;
+        }
         scrollBottom();
       });
+    };
+
+    const resetStream = () => {
+      answer = ''; reason = '';
+      painted = 0; thinkPainted = 0;
+      answerEl = null; thinkEl = null; thinkBody = null;
+      bubble.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
     };
 
     const ctrl = new AbortController();
     S.abort = ctrl;
 
-    try {
-      await streamChat({
-        messages: [{ role: 'system', content: PERSONAS[S.persona].prompt }].concat(ctx),
-        signal: ctrl.signal,
-        onDelta: (d, full) => {
-          if (d.reasoning_content) { reason += d.reasoning_content; }
-          if (d.content) { answer += d.content; }
-          if (answer || reason) paint();
-        }
-      });
+    // 带图时先试视觉模型（GLM-4V）；失败（没资源包/限流）自动摘图按文字重试
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const withImg = attempt === 0 && hasImg;
+      const ctx = raw.map((m, i) => toApiMsg(m, withImg && i === raw.length - 1));
+      const useModel = withImg ? 'glm-4v-flash' : S.model;
 
-      S.streaming = false;
-      S.abort = null;
-      bubble.innerHTML =
-        (reason ? '<details class="thinking"><summary>🧠 思考过程</summary><div class="t-body">' + esc(reason) + '</div></details>' : '') +
-        '<div class="a-body">' + md(answer || '（这次没生成内容，换句话再试试）') + '</div>';
-      S.messages.push({ role: 'assistant', content: answer });
-      saveChat();
-      bumpStats(answer.length, 0);
-      toolRow(holder, answer);
-      updateSend();
-      scrollBottom();
-    } catch (err) {
-      S.streaming = false;
-      S.abort = null;
-      updateSend();
-      const msg = friendlyError(err);
-      bubble.innerHTML = '<div class="a-body" style="color:var(--code-fg);">' + esc(msg) + '</div>';
-      toolRow(holder, msg);
-      scrollBottom();
+      try {
+        await streamChat({
+          model: useModel,
+          messages: [{ role: 'system', content: PERSONAS[S.persona].prompt }].concat(ctx),
+          signal: ctrl.signal,
+          onDelta: (d, full) => {
+            if (d.reasoning_content) { reason += d.reasoning_content; }
+            if (d.content) { answer += d.content; }
+            if (answer || reason) paint();
+          }
+        });
+
+        S.streaming = false;
+        S.abort = null;
+        bubble.innerHTML =
+          (reason ? '<details class="thinking"><summary>🧠 思考过程</summary><div class="t-body">' + esc(reason) + '</div></details>' : '') +
+          '<div class="a-body">' + md(answer || '（这次没生成内容，换句话再试试）') + '</div>';
+        S.messages.push({ role: 'assistant', content: answer });
+        saveChat();
+        bumpStats(answer.length, 0);
+        toolRow(holder, answer);
+        updateSend();
+        scrollBottom();
+        break;
+      } catch (err) {
+        if (/abort/i.test(String((err && err.message) || err))) {
+          // 用户点了停止：保留已生成的部分
+          S.streaming = false;
+          S.abort = null;
+          updateSend();
+          bubble.innerHTML = answer
+            ? '<div class="a-body">' + md(answer) + '</div>'
+            : '<div class="a-body" style="color:var(--code-fg);">已停止生成。</div>';
+          if (answer) { S.messages.push({ role: 'assistant', content: answer }); saveChat(); toolRow(holder, answer); }
+          scrollBottom();
+          break;
+        }
+        if (withImg) {
+          // 视觉模型不可用（1113 / 429 / 不支持）：摘掉图按纯文字重试
+          delete lastMsg.imgFull;
+          resetStream();
+          toast('看图模型没开通或被限流，先按文字回答了', 3000);
+          continue;
+        }
+        S.streaming = false;
+        S.abort = null;
+        updateSend();
+        const msg = friendlyError(err);
+        bubble.innerHTML = '<div class="a-body" style="color:var(--code-fg);">' + esc(msg) + '</div>';
+        toolRow(holder, msg);
+        scrollBottom();
+        break;
+      }
     }
   }
 
@@ -2168,7 +2431,7 @@
     refreshChanState();
   }
 
-  async function streamChat({ messages, signal, onDelta, _retry, _via }) {
+  async function streamChat({ messages, signal, onDelta, _retry, _via, model }) {
     const key = apiKey();
     const via = _via || channelNow();
 
@@ -2190,7 +2453,7 @@
         headers: headers,
         signal: signal,
         body: JSON.stringify({
-          model: S.model,
+          model: model || S.model,
           messages: messages,
           temperature: S.temp,
           stream: true
@@ -2204,7 +2467,7 @@
         S.directBlocked = true;
         if (relayBase() && S.channel === 'auto') {
           try { ping(); } catch (e2) {}
-          return streamChat({ messages, signal, onDelta, _retry, _via: 'relay' });
+          return streamChat({ messages, signal, onDelta, _retry, _via: 'relay', model: model });
         }
         throw new Error('CORS_BLOCKED');
       }
@@ -2232,7 +2495,7 @@
         toast(code === 1113
           ? '当前账户余额不足，已自动切到免费模型 ' + modelName(S.model)
           : '当前模型限流，已自动切到 ' + modelName(S.model), 3400);
-        return streamChat({ messages: messages, signal: signal, onDelta: onDelta, _retry: true, _via: via });
+        return streamChat({ messages: messages, signal: signal, onDelta: onDelta, _retry: true, _via: via, model: model });
       }
 
       throw new Error((res.status === 401 ? '401 ' : res.status === 429 ? '429 ' : res.status + ' ') + (msg || res.statusText));
@@ -2493,7 +2756,9 @@
   function renderModelOpts() {
     const box = $('#model-opts');
     if (!box) return;
-    box.innerHTML = Object.keys(MODELS).map((k) => {
+    // 付费档默认隐藏：只有旧版工具箱里打开「投币门槛」才出现
+    const keys = Object.keys(MODELS).filter((k) => !MODELS[k].hidden || S.coinGate);
+    box.innerHTML = keys.map((k) => {
       const m = MODELS[k];
       const locked = S.coinGate && m.plan !== 'free';
       const badgeStyle = m.plan === 'free'
@@ -2783,10 +3048,26 @@
   });
   $('#legacy-coingate').addEventListener('click', () => {
     S.coinGate = !S.coinGate;
+    if (!S.coinGate && MODELS[S.model] && MODELS[S.model].hidden) {
+      S.model = CONFIG.DEFAULT_MODEL;
+      $('#model-pill').textContent = modelName(S.model);
+    }
     savePrefs();
     syncLegacy();
-    toast(S.coinGate ? '已开启投币门槛预览' : '已关闭投币门槛预览');
+    toast(S.coinGate ? '已开启付费档（仅预览，仍不可用）' : '付费档已隐藏，回到免费模型');
   });
+
+  const paidReset = $('#btn-paid-reset');
+  if (paidReset) paidReset.addEventListener('click', () => {
+    S.model = CONFIG.DEFAULT_MODEL;
+    S.coinGate = false;
+    $('#model-pill').textContent = modelName(S.model);
+    savePrefs();
+    syncLegacy();
+    ping();
+    toast('已重置为 ' + modelName(S.model));
+  });
+
   $('#btn-close-legacy').addEventListener('click', closeLegacy);
 
   $('#btn-clear-all').addEventListener('click', () => {
@@ -2968,13 +3249,21 @@
         const bubble = holder.bubble;
         bubble.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
 
-        let answer = '', raf = 0;
+        let answer = '', raf = 0, bd = null, n = 0;
         const paint = () => {
           if (raf) return;
           raf = requestAnimationFrame(() => {
             raf = 0;
             if (!bubble.isConnected) return;
-            bubble.innerHTML = '<div class="a-body">' + md(answer) + '<span class="cursor"></span></div>';
+            if (!bd) {
+              bd = document.createElement('div');
+              bd.className = 'a-body streaming';
+              bubble.appendChild(bd);
+            }
+            if (answer.length > n) {
+              bd.appendChild(document.createTextNode(answer.slice(n)));
+              n = answer.length;
+            }
             scrollBottom();
           });
         };
@@ -3154,6 +3443,8 @@
   /* ---------------- 启动 ---------------- */
   async function boot() {
     loadPrefs();
+    // 付费档默认封存：上次选过也不让它生效
+    if (MODELS[S.model] && MODELS[S.model].hidden && !S.coinGate) S.model = CONFIG.DEFAULT_MODEL;
     applyTheme();
     applyProfile();
     $('#model-pill').textContent = modelName(S.model);
