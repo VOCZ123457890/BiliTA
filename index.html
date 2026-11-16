@@ -571,6 +571,56 @@
   @media (prefers-reduced-motion:reduce){
     *{animation:none !important;transition:none !important;}
   }
+
+  /* ============ v3.6：会话列表 / 工作台 / 圆桌 / 创作四件套 ============ */
+  .rail-act{color:var(--brand-deep);font-weight:700;background:var(--brand-soft);}
+  .sess-list{display:flex;flex-direction:column;gap:2px;max-height:230px;overflow-y:auto;}
+  .sess-item{
+    display:flex;align-items:center;gap:6px;width:100%;padding:7px 4px 7px 8px;border-radius:9px;
+    color:var(--ink-2);font-size:12px;text-align:left;transition:background .16s,color .16s;
+  }
+  .sess-item:hover{background:var(--brand-soft-2);color:var(--ink);}
+  .sess-item.on{background:var(--brand-soft);color:var(--brand-deep);font-weight:700;}
+  .sess-item .st{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sess-item .sd{font-size:9.5px;color:#AEB3BB;flex:0 0 auto;}
+  .sess-x{
+    width:20px;height:20px;border-radius:6px;display:grid;place-items:center;
+    color:#B9BEC6;flex:0 0 20px;opacity:0;transition:opacity .15s,background .15s,color .15s;
+  }
+  .sess-item:hover .sess-x,.sess-item.on .sess-x{opacity:1;}
+  .sess-x:hover{background:#FDEBEE;color:#E0455A;}
+  .sess-x svg{width:11px;height:11px;}
+  .sess-none{font-size:11.5px;color:var(--sub);padding:7px 8px;line-height:1.65;}
+  .sess-sheet .sess-item{padding:11px 6px 11px 8px;font-size:13px;border-radius:0;border-bottom:1px solid #F4F5F7;}
+  .sess-sheet .sess-x{opacity:1;}
+  .sess-sheet .sess-item.on{background:var(--brand-soft);}
+
+  .mode-pill{
+    display:inline-flex;align-items:center;gap:4px;height:21px;padding:0 9px;border-radius:99px;
+    border:1.5px solid var(--brand-line);background:var(--brand-soft);color:var(--brand-deep);
+    font-size:10px;font-weight:800;white-space:nowrap;transition:all .18s;
+  }
+  .mode-pill.on{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border-color:transparent;box-shadow:0 4px 10px var(--brand-glow);}
+
+  .rt-note{
+    margin:9px 16px 0;padding:8px 11px;border-radius:10px;background:var(--brand-soft);
+    border:1px solid var(--brand-line);color:var(--brand-deep);font-size:11px;line-height:1.6;display:none;
+  }
+  .rt-note.on{display:block;}
+  .msg .who .rtag{font-size:9.5px;font-weight:800;color:var(--brand-deep);background:var(--brand-soft);border-radius:5px;padding:1px 5px;margin-left:6px;}
+
+  .kit-out{display:flex;flex-direction:column;gap:9px;margin-top:13px;}
+  .kit-card{border:1.5px solid #EDEFF2;border-radius:13px;padding:11px 12px;background:#fff;}
+  .kit-card h5{margin:0 0 7px;font-size:11.5px;font-weight:800;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .kit-card h5 .cp{
+    font-size:10px;font-weight:800;color:var(--brand-deep);border:1px solid var(--brand-line);
+    border-radius:7px;padding:3px 8px;background:var(--brand-soft);flex:0 0 auto;
+  }
+  .kit-li{font-size:12.5px;line-height:1.68;color:var(--ink-2);padding:3px 0 3px 19px;position:relative;}
+  .kit-li b{position:absolute;left:0;top:3px;color:var(--brand);font-weight:900;font-size:11px;}
+  .kit-li.tx{padding-left:0;color:var(--ink);}
+  .kit-card .muted{font-size:11.5px;color:var(--sub);}
+  .kit-loading{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--sub);padding:12px 2px;}
 </style>
 </head>
 <body>
@@ -631,6 +681,15 @@
           新建对话
         </button>
 
+        <button class="rail-item rail-act" id="btn-rail-kit">
+          <span class="ri">🧰</span><span>创作四件套</span>
+        </button>
+
+        <div class="rail-block">
+          <div class="rail-label">最近对话</div>
+          <div class="sess-list" id="rail-sessions"></div>
+        </div>
+
         <div class="rail-block">
           <div class="rail-label">快捷提问</div>
           <button class="rail-item" data-rail-q="帮我给这期视频起 5 个标题，主题是「大学生在宿舍做减脂餐」，要有梗但不骗人。">
@@ -690,6 +749,9 @@
             <img class="mini-avatar" id="avatar-img" alt="" />
             <span id="nickname">游客</span>
           </div>
+          <button class="icon-btn" id="btn-menu" aria-label="工作台">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.8"/></svg>
+          </button>
           <button class="icon-btn" id="btn-settings" aria-label="设置">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
           </button>
@@ -701,6 +763,10 @@
         <div class="banner" id="banner" style="display:none;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
           <span id="banner-text"><b>演示模式：</b>还没配置 API Key，回复是本地模拟的。</span>
+        </div>
+
+        <div class="rt-note" id="rt-note">
+          <b>圆桌模式已开：</b>每次提问会让「策划 / 数据党 / 老观众」三个视角各答一次（共 3 次模型请求，稍慢一点）。
         </div>
 
         <div class="msgs" id="msgs"></div>
@@ -715,6 +781,7 @@
           <div class="hint">
             <div class="left">
               <span class="model-pill"><i></i><span id="model-pill">GLM-4-Flash</span></span>
+              <button class="mode-pill" id="btn-round" aria-pressed="false" title="三个视角同时回答">🎙 圆桌</button>
               <span>内容由 AI 生成，请自行判断</span>
             </div>
             <span id="counter">0 字</span>
@@ -812,7 +879,7 @@
       <div class="sect">
         <div class="label">关于</div>
         <div class="desc" style="margin-bottom:0;line-height:1.8;">
-          小破站 AI · <span id="ver-line">v3.5.3</span><br>
+          小破站 AI · <span id="ver-line">v3.6.0</span><br>
           直连智谱 BigModel，不经过中转。对用户免费、无广告、不收集对话。<br>
           Powered by Toy JS SDK.
         </div>
@@ -821,6 +888,73 @@
       <div class="sect" style="padding-bottom:4px;">
         <button class="btn-line block" id="btn-exit-2" style="color:#E0455A;">退出 Toy</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ================= 工作台（手机端主入口） ================= -->
+  <div class="sheet" id="sheet-menu">
+    <div class="sheet-head">
+      <h3>工作台</h3>
+      <button class="icon-btn" id="btn-close-menu" aria-label="关闭" style="width:32px;height:32px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body">
+      <div class="sect" style="padding-top:10px;">
+        <div class="row">
+          <button class="btn-line pri" id="btn-menu-new" style="flex:1;">＋ 新建对话</button>
+          <button class="btn-line" id="btn-menu-kit" style="flex:1;">🧰 创作四件套</button>
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="label">最近对话 <span class="kstate" id="sess-count">0</span></div>
+        <div class="desc">只存在这台设备，最多保留 30 个；点一下就能切回去接着聊。</div>
+        <div class="sess-list sess-sheet" id="menu-sessions"></div>
+      </div>
+
+      <div class="sect">
+        <div class="label">圆桌讨论 <span class="kstate" id="round-state">关闭</span></div>
+        <div class="desc">开一题三答：策划、数据党、老观众各答一次，用来对比选题、标题的不同看法。每次提问消耗 3 次请求。</div>
+        <button class="btn-line block" id="btn-menu-round">圆桌：关闭</button>
+      </div>
+
+      <div class="sect" style="padding-bottom:4px;">
+        <div class="label">关于</div>
+        <div class="desc" style="margin-bottom:0;line-height:1.8;">
+          小破站 AI · <span id="ver-line-2">v3.6.0</span><br>
+          对话只存本机，不上传服务器；生成内容由 AI 产生，请自行判断。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 创作四件套 ================= -->
+  <div class="sheet" id="sheet-kit">
+    <div class="sheet-head">
+      <h3>创作四件套</h3>
+      <button class="icon-btn" id="btn-close-kit" aria-label="关闭" style="width:32px;height:32px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body">
+      <div class="sect" style="padding-top:8px;">
+        <div class="label">这次讲什么？</div>
+        <div class="desc">一句话说清主题，越具体越好。生成的内容可以直接复制走。</div>
+        <textarea class="field" id="kit-topic" rows="3" placeholder="例：宿舍里用一口电煮锅做减脂餐，10 块钱以内，适合新手" maxlength="300" style="resize:none;line-height:1.65;"></textarea>
+        <div class="personas" id="kit-cats" style="margin-top:9px;">
+          <button class="pchip" data-kcat="生活">生活</button>
+          <button class="pchip on" data-kcat="知识">知识</button>
+          <button class="pchip" data-kcat="搞笑整活">搞笑整活</button>
+          <button class="pchip" data-kcat="数码测评">数码测评</button>
+        </div>
+        <div class="row" style="margin-top:9px;">
+          <button class="btn-line pri" id="btn-kit-go" style="flex:1;">生成四件套</button>
+          <button class="btn-line" id="btn-kit-clear" style="flex:0 0 auto;">清空</button>
+        </div>
+        <div class="desc" id="kit-hint" style="margin:9px 0 0;line-height:1.65;"></div>
+      </div>
+      <div class="kit-out" id="kit-out"></div>
     </div>
   </div>
 
@@ -878,7 +1012,8 @@
       <div class="sect">
         <div class="label">版本记录</div>
         <div class="desc" style="margin-bottom:0;line-height:1.9;">
-          <b>v3.5.3</b>（当前）· 退出修复：SDK 失败后自动 history.back 兜底，退出页显示诊断 + 返回广场按钮<br>
+          <b>v3.6.0</b>（当前）· 多会话管理（最多 30 个，本地保存）+ 圆桌讨论（一题三答）+ 创作四件套（标题/简介/弹幕/封面）<br>
+          <b>v3.5.3</b> · 退出修复：SDK 失败后自动 history.back 兜底，退出页显示诊断 + 返回广场按钮<br>
           <b>v3.5.2</b> · 空态/欢迎页布局优化：快捷卡片改用 SVG 图标，间距收紧<br>
           <b>v3.5.1</b> · 修复嵌入窄栏布局：按实际容器宽度选档，新增超窄嵌入档<br>
           <b>v3.5.0</b> · 直连优先 + 静默降级：App 内纯直连，浏览器被拦时自动切中转<br>
@@ -924,7 +1059,7 @@
 
   /* ---------------- 配置（部署时改这里） ---------------- */
   const CONFIG = {
-    VERSION: 'v3.5.3',
+    VERSION: 'v3.6.0',
     CHANNEL: 'debug',
 
     // 直连智谱开放平台（不经过任何中转）
@@ -1042,6 +1177,8 @@
     coinGate: false,      // v4 投币门槛预览
     ownKey: '',
     theme: CONFIG.THEME,  // auto | winter | summer
+    round: false,         // 圆桌模式（一题三答）
+    kitCat: '知识',        // 创作四件套：分区
     online: false,
     stats: { msgs: 0, words: 0, since: Date.now() },
     tpl: null,
@@ -1380,7 +1517,9 @@
       if (typeof p.relay === 'string') S.relay = p.relay;
       if (p.channel === 'auto' || p.channel === 'direct' || p.channel === 'relay') S.channel = p.channel;
       if (typeof p.legacyOn === 'boolean') S.legacyOn = p.legacyOn && !!p.relay;
-      if (typeof p.coinGate === 'boolean') S.coinGate = p.coinGate;
+      if (p.coinGate === 'boolean') S.coinGate = p.coinGate;
+      if (typeof p.round === 'boolean') S.round = p.round;
+      if (typeof p.kitCat === 'string') S.kitCat = p.kitCat;
       if (p.stats) S.stats = Object.assign(S.stats, p.stats);
     } catch (e) { /* ignore */ }
     // CONFIG.RELAY 作为出厂默认值（用户没在设置里填过才生效）
@@ -1400,7 +1539,8 @@
         model: S.model, persona: S.persona, temp: S.temp,
         ownKey: S.ownKey, relay: S.relay, legacyOn: S.legacyOn,
         channel: S.channel,
-        coinGate: S.coinGate, stats: S.stats, theme: S.theme
+        coinGate: S.coinGate, stats: S.stats, theme: S.theme,
+        round: S.round, kitCat: S.kitCat
       }));
     } catch (e) {}
     // 云存储优先（≤1024 字节），失败静默
@@ -1410,7 +1550,14 @@
       }), 4000).catch(() => {});
     }
   }
-  function loadChat() {
+  /* ---------------- 多会话：本地存储 ----------------
+   * 结构：{ active: 'id', list: [{ id, title, msgs, ctime, mtime }] }
+   * 老版本只有一条 bili_toy_ai_chat_<uid>，首次启动自动迁移成第一个会话
+   * -------------------------------------------------- */
+  const LS_SESS = 'bili_toy_ai_sessions_v1';
+  const MAX_SESS = 30;
+
+  function loadChatRaw() {
     try {
       const raw = localStorage.getItem(lsKey());
       if (!raw) return [];
@@ -1418,8 +1565,155 @@
       return Array.isArray(arr) ? arr.slice(-40) : [];
     } catch (e) { return []; }
   }
+
+  const sessId = () => 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+
+  function titleOf(msgs) {
+    const first = (msgs || []).find((m) => m.role === 'user');
+    const t = String((first && first.content) || '').replace(/[\s`*#>]+/g, ' ').trim();
+    return (t || '新对话').slice(0, 18);
+  }
+
+  function sessStore() {
+    let o = null;
+    try { o = JSON.parse(localStorage.getItem(LS_SESS) || 'null'); } catch (e) {}
+    if (!o || !Array.isArray(o.list)) o = { active: '', list: [] };
+    return o;
+  }
+  function sessSave(o) {
+    try { localStorage.setItem(LS_SESS, JSON.stringify(o)); } catch (e) {}
+  }
+
+  // 取存储；顺手做老数据迁移 + 修正 active 指针
+  function ensureStore() {
+    const o = sessStore();
+    if (!o.list.length) {
+      const old = loadChatRaw();
+      if (old.length) {
+        const id = sessId();
+        o.list.unshift({ id: id, title: titleOf(old), msgs: old, ctime: Date.now(), mtime: Date.now() });
+        o.active = id;
+        try { localStorage.removeItem(lsKey()); } catch (e) {}
+        sessSave(o);
+      }
+    }
+    if (!o.active || !o.list.some((s) => s.id === o.active)) {
+      o.active = o.list.length ? o.list[0].id : '';
+      sessSave(o);
+    }
+    return o;
+  }
+
+  function loadChat() {
+    const o = ensureStore();
+    const cur = o.list.filter((s) => s.id === o.active)[0];
+    return cur ? cur.msgs.slice(-40) : [];
+  }
+
   function saveChat() {
-    try { localStorage.setItem(lsKey(), JSON.stringify(S.messages.slice(-40))); } catch (e) {}
+    const o = ensureStore();
+    let cur = o.list.filter((s) => s.id === o.active)[0];
+    if (!cur) {
+      if (!S.messages.length) return;
+      cur = { id: sessId(), title: titleOf(S.messages), msgs: [], ctime: Date.now(), mtime: Date.now() };
+      o.list.unshift(cur);
+      o.active = cur.id;
+    }
+    cur.msgs = S.messages.slice(-40);
+    if (S.messages.length) cur.title = titleOf(S.messages);
+    cur.mtime = Date.now();
+    o.list.sort((a, b) => b.mtime - a.mtime);
+    if (o.list.length > MAX_SESS) o.list = o.list.slice(0, MAX_SESS);
+    sessSave(o);
+    renderSessions();
+  }
+
+  function fmtDay(ts) {
+    const d = new Date(ts || Date.now()), n = new Date();
+    if (d.toDateString() === n.toDateString()) {
+      return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    }
+    return (d.getMonth() + 1) + '/' + d.getDate();
+  }
+
+  function renderSessions() {
+    const o = ensureStore();
+    const body = o.list.length
+      ? o.list.map((s) =>
+          '<div class="sess-item' + (s.id === o.active ? ' on' : '') + '" data-sid="' + s.id + '" role="button" tabindex="0">' +
+            '<span class="st">' + esc(s.title || '新对话') + '</span>' +
+            '<span class="sd">' + fmtDay(s.mtime) + '</span>' +
+            '<button class="sess-x" data-del="' + s.id + '" aria-label="删除这个对话">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
+            '</button>' +
+          '</div>'
+        ).join('')
+      : '<div class="sess-none">还没有对话记录，随便问一句就有了。</div>';
+
+    ['#rail-sessions', '#menu-sessions'].forEach((sel) => {
+      const box = $(sel);
+      if (!box) return;
+      box.innerHTML = body;
+      $$('.sess-item', box).forEach((it) => {
+        it.addEventListener('click', (e) => {
+          if (e.target.closest('.sess-x')) return;
+          switchSession(it.dataset.sid);
+        });
+      });
+      $$('.sess-x', box).forEach((b) => b.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        deleteSession(b.dataset.del);
+      }));
+    });
+
+    const cnt = $('#sess-count');
+    if (cnt) cnt.textContent = o.list.length + ' 个';
+  }
+
+  function newSession(silent) {
+    if (S.streaming) stopStream();
+    const o = ensureStore();
+    const id = sessId();
+    o.list.unshift({ id: id, title: '新对话', msgs: [], ctime: Date.now(), mtime: Date.now() });
+    o.active = id;
+    if (o.list.length > MAX_SESS) o.list = o.list.slice(0, MAX_SESS);
+    sessSave(o);
+    S.messages = [];
+    renderAll();
+    renderSessions();
+    if (!silent) toast('已开始新对话');
+    if (window.innerWidth > 760) $('#input').focus();
+  }
+
+  function switchSession(id) {
+    if (S.streaming) stopStream();
+    const o = ensureStore();
+    const s = o.list.filter((x) => x.id === id)[0];
+    if (!s) return;
+    o.active = id;
+    sessSave(o);
+    S.messages = s.msgs.slice(-40);
+    renderAll();
+    renderSessions();
+    closeMenu();
+    closeKit();
+    setTimeout(() => scrollBottom(true), 50);
+  }
+
+  function deleteSession(id) {
+    const o = ensureStore();
+    const i = o.list.map((x) => x.id).indexOf(id);
+    if (i < 0) return;
+    o.list.splice(i, 1);
+    sessSave(o);
+    if (o.active === id) {
+      o.active = o.list.length ? o.list[0].id : '';
+      S.messages = o.list.length ? o.list[0].msgs.slice(-40) : [];
+      renderAll();
+    }
+    renderSessions();
+    toast('已删除这个对话');
   }
 
   /* ---------------- Toast ---------------- */
@@ -1573,10 +1867,11 @@
     const ava = role === 'user'
       ? '<div class="ava"><img src="' + esc((S.profile && S.profile.avatar) || defaultAvatar()) + '" alt="" onerror="this.style.display=\'none\'"></div>'
       : '<div class="ava bot">' + MASCOT + '</div>';
-    const who = role === 'user' ? ((S.profile && S.profile.nickname) || '我') : '小破站 AI';
+    const who = role === 'user' ? ((S.profile && S.profile.nickname) || '我') : ((opts && opts.who) || '小破站 AI');
+    const rtag = (opts && opts.rtag) ? '<span class="rtag">' + esc(opts.rtag) + '</span>' : '';
     wrap.innerHTML = ava +
       '<div class="body">' +
-        '<div class="who">' + esc(who) + '</div>' +
+        '<div class="who">' + esc(who) + rtag + '</div>' +
         '<div class="bubble"></div>' +
       '</div>';
     $('#msgs').appendChild(wrap);
@@ -1595,7 +1890,11 @@
   function renderAll() {
     if (!S.messages.length) { renderEmpty(); return; }
     $('#msgs').innerHTML = '';
-    S.messages.forEach((m) => addMsgEl(m.role === 'user' ? 'user' : 'ai', m.content));
+    S.messages.forEach((m) => addMsgEl(
+      m.role === 'user' ? 'user' : 'ai',
+      m.content,
+      m.role === 'user' ? null : { who: m.who, rtag: m.rtag }
+    ));
     scrollBottom(true);
   }
 
@@ -1679,6 +1978,7 @@
     saveChat();
     bumpStats(text.length, 1);
 
+    if (S.round) { await runRoundtable(); return; }
     await runAssistant();
   }
 
@@ -2187,9 +2487,7 @@
   }
   function closeSheet() {
     sheet.classList.remove('on');
-    if (!$('#dialog-exit').classList.contains('on') && !legacySheet.classList.contains('on')) {
-      mask.classList.remove('on');
-    }
+    syncMask();
   }
 
   function renderModelOpts() {
@@ -2493,10 +2791,14 @@
 
   $('#btn-clear-all').addEventListener('click', () => {
     S.messages = [];
+    const o = ensureStore();
+    const cur = o.list.filter((s) => s.id === o.active)[0];
+    if (cur) { cur.msgs = []; cur.title = '新对话'; cur.mtime = Date.now(); sessSave(o); }
     try { localStorage.removeItem(lsKey()); } catch (e) {}
     renderAll();
+    renderSessions();
     closeLegacy();
-    toast('对话已清空');
+    toast('当前对话已清空');
   });
 
   $('#btn-exit-2').addEventListener('click', () => { closeSheet(); openExitDialog(); });
@@ -2534,14 +2836,7 @@
   /* ---------------- 桌面侧栏 ---------------- */
   const railNew = $('#btn-rail-new');
   if (railNew) {
-    railNew.addEventListener('click', () => {
-      if (S.streaming) stopStream();
-      S.messages = [];
-      try { localStorage.removeItem(lsKey()); } catch (e) {}
-      renderAll();
-      toast('已开始新对话');
-      if (window.innerWidth > 760) $('#input').focus();
-    });
+    railNew.addEventListener('click', () => newSession(false));
   }
   $$('.rail-item').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -2557,7 +2852,40 @@
   if (railSet) railSet.addEventListener('click', openSheet);
   const railExit = $('#btn-rail-exit');
   if (railExit) railExit.addEventListener('click', openExitDialog);
-  mask.addEventListener('click', () => { closeExitDialog(); closeSheet(); closeLegacy(); });
+
+  /* ---------------- 工作台 / 圆桌 / 四件套 ---------------- */
+  const railKit = $('#btn-rail-kit');
+  if (railKit) railKit.addEventListener('click', openKit);
+  const btnMenu = $('#btn-menu');
+  if (btnMenu) btnMenu.addEventListener('click', openMenu);
+  const bcm = $('#btn-close-menu');
+  if (bcm) bcm.addEventListener('click', closeMenu);
+  const bmn = $('#btn-menu-new');
+  if (bmn) bmn.addEventListener('click', () => { closeMenu(); newSession(false); });
+  const bmk = $('#btn-menu-kit');
+  if (bmk) bmk.addEventListener('click', () => { closeMenu(); openKit(); });
+  const bmr = $('#btn-menu-round');
+  if (bmr) bmr.addEventListener('click', toggleRound);
+  const bck = $('#btn-close-kit');
+  if (bck) bck.addEventListener('click', closeKit);
+  const brd = $('#btn-round');
+  if (brd) brd.addEventListener('click', toggleRound);
+  const bkg = $('#btn-kit-go');
+  if (bkg) bkg.addEventListener('click', kitGo);
+  const bkl = $('#btn-kit-clear');
+  if (bkl) bkl.addEventListener('click', () => {
+    $('#kit-topic').value = '';
+    $('#kit-out').innerHTML = '';
+    $('#kit-hint').textContent = '';
+    $('#kit-topic').focus();
+  });
+  $$('#kit-cats .pchip').forEach((b) => b.addEventListener('click', () => {
+    S.kitCat = b.dataset.kcat || '知识';
+    $$('#kit-cats .pchip').forEach((x) => x.classList.toggle('on', x === b));
+    savePrefs();
+  }));
+
+  mask.addEventListener('click', () => { closeExitDialog(); closeSheet(); closeLegacy(); closeMenu(); closeKit(); });
   $('#btn-exit').addEventListener('click', openExitDialog);
   $('#btn-cancel-exit').addEventListener('click', closeExitDialog);
   $('#btn-confirm-exit').addEventListener('click', doExit);
@@ -2577,8 +2905,251 @@
 
   // 键盘 Esc
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { closeExitDialog(); closeSheet(); closeLegacy(); }
+    if (e.key === 'Escape') { closeExitDialog(); closeSheet(); closeLegacy(); closeMenu(); closeKit(); }
   });
+
+  /* ============================================================
+   * 圆桌讨论（v3.6）：同一个问题，三个视角各答一次
+   * 不做多智能体调度，只做「并行观点」——便宜、可预期、不吵架
+   * ============================================================ */
+  const ROUND_ROLES = [
+    {
+      k: 'plan', name: '策划', emoji: '✍️',
+      prompt: '你是B站的内容策划，擅长判断选题、受众和发布节奏。针对用户的问题，从「给谁看」「为什么是现在」「怎么起量」三点给判断，每条都要能直接执行。180 字以内，分点写，不客套。'
+    },
+    {
+      k: 'data', name: '数据党', emoji: '📊',
+      prompt: '你是B站的数据型运营，关注完播率、互动率、推荐机制和合规风险。针对用户的问题，指出数据上最容易踩的坑和更优解，给可量化的建议（标题字数、前 3 秒、封面文字对比度之类）。180 字以内，分点写。'
+    },
+    {
+      k: 'viewer', name: '老观众', emoji: '💬',
+      prompt: '你是刷了十年B站的老观众，说话直白。针对用户的问题，说普通观众第一眼会不会点、会不会看完、会不会三连，哪里最容易让人划走。150 字以内，大白话，可以带一点弹幕梗，但不阴阳怪气。'
+    }
+  ];
+
+  function renderRoundUI() {
+    const b = $('#btn-round');
+    if (b) {
+      b.classList.toggle('on', S.round);
+      b.setAttribute('aria-pressed', S.round ? 'true' : 'false');
+      b.textContent = S.round ? '🎙 圆桌 · 开' : '🎙 圆桌';
+    }
+    const n = $('#rt-note');
+    if (n) n.classList.toggle('on', S.round);
+    const st = $('#round-state');
+    if (st) st.textContent = S.round ? '开启' : '关闭';
+    const mb = $('#btn-menu-round');
+    if (mb) mb.textContent = S.round ? '圆桌：开启（点一下关掉）' : '圆桌：关闭';
+  }
+
+  function toggleRound() {
+    S.round = !S.round;
+    renderRoundUI();
+    savePrefs();
+    toast(S.round ? '圆桌已开：下一次提问会有三个视角' : '已回到单人模式');
+  }
+
+  async function runRoundtable() {
+    if (S.streaming) return;
+    S.streaming = true;
+    updateSend();
+
+    const ctrl = new AbortController();
+    S.abort = ctrl;
+    const q = (S.messages[S.messages.length - 1] || {}).content || '';
+    const hist = S.messages.slice(0, -1).slice(-4);
+
+    try {
+      for (let i = 0; i < ROUND_ROLES.length; i++) {
+        const r = ROUND_ROLES[i];
+        if (ctrl.signal.aborted) break;
+
+        const holder = addMsgEl('ai', '', { who: r.name, rtag: r.emoji });
+        const bubble = holder.bubble;
+        bubble.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
+
+        let answer = '', raf = 0;
+        const paint = () => {
+          if (raf) return;
+          raf = requestAnimationFrame(() => {
+            raf = 0;
+            if (!bubble.isConnected) return;
+            bubble.innerHTML = '<div class="a-body">' + md(answer) + '<span class="cursor"></span></div>';
+            scrollBottom();
+          });
+        };
+
+        await streamChat({
+          messages: [{ role: 'system', content: r.prompt }].concat(hist).concat([{ role: 'user', content: q }]),
+          signal: ctrl.signal,
+          onDelta: (d) => { if (d.content) { answer += d.content; paint(); } }
+        });
+
+        bubble.innerHTML = '<div class="a-body">' + md(answer || '（这个视角先不说话了）') + '</div>';
+        S.messages.push({ role: 'assistant', content: answer, who: r.name, rtag: r.emoji });
+        saveChat();
+        scrollBottom();
+        if (i < ROUND_ROLES.length - 1) await sleep(120);
+      }
+    } catch (e) {
+      if (!ctrl.signal.aborted) addMsgEl('ai', '> 圆桌中断：' + friendlyError(e));
+    } finally {
+      S.streaming = false;
+      S.abort = null;
+      updateSend();
+      saveChat();
+    }
+  }
+
+  /* ============================================================
+   * 创作四件套（v3.6）：一次请求出「标题 / 简介 / 弹幕 / 封面」
+   * 要求模型回 JSON，客户端拆成四张卡片，各自可复制
+   * ============================================================ */
+  const KIT_SYS = '你是B站头部UP主的内容策划。只输出一个 JSON 对象，不要代码块、不要任何解释文字。结构：{"titles":["5个视频标题"],"intro":"视频简介","danmaku":["8条弹幕"],"covers":["3条封面大字"]}。要求：标题有梗但不骗人，每条不超过 24 字；简介 80-120 字、口语化；弹幕长短交错、像真实弹幕；封面大字每条不超过 12 字。全部用中文。';
+
+  function parseKit(raw) {
+    let s = String(raw || '').trim().replace(/^```(?:json)?/i, '').replace(/```\s*$/, '').trim();
+    const a = s.indexOf('{'), b = s.lastIndexOf('}');
+    if (a >= 0 && b > a) s = s.slice(a, b + 1);
+    try {
+      const o = JSON.parse(s);
+      const arr = (x) => (Array.isArray(x) ? x.map((v) => String(v || '').trim()).filter(Boolean) : []);
+      const d = {
+        titles: arr(o.titles),
+        intro: String(o.intro || '').trim(),
+        danmaku: arr(o.danmaku),
+        covers: arr(o.covers)
+      };
+      if (!d.titles.length && !d.intro) return null;
+      return d;
+    } catch (e) { return null; }
+  }
+
+  async function copyText(t) {
+    try { await navigator.clipboard.writeText(t); return true; } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e2) {}
+      ta.remove();
+      return ok;
+    }
+  }
+
+  function kitMd(d) {
+    let out = '**标题**\n' + d.titles.map((t, i) => (i + 1) + '. ' + t).join('\n');
+    if (d.intro) out += '\n\n**简介**\n' + d.intro;
+    if (d.danmaku.length) out += '\n\n**弹幕**\n' + d.danmaku.map((x) => '· ' + x).join('\n');
+    if (d.covers.length) out += '\n\n**封面大字**\n' + d.covers.map((x) => '· ' + x).join('\n');
+    return out;
+  }
+
+  function renderKit(d, topic) {
+    const ol = (arr) => arr.map((x, i) => '<div class="kit-li"><b>' + (i + 1) + '</b>' + esc(x) + '</div>').join('');
+    const ul = (arr) => arr.map((x) => '<div class="kit-li">· ' + esc(x) + '</div>').join('');
+
+    const blocks = [];
+    if (d.titles.length) blocks.push({ k: '标题', body: ol(d.titles), text: d.titles.map((t, i) => (i + 1) + '. ' + t).join('\n') });
+    if (d.intro) blocks.push({ k: '简介', body: '<div class="kit-li tx">' + esc(d.intro) + '</div>', text: d.intro });
+    if (d.danmaku.length) blocks.push({ k: '弹幕', body: ul(d.danmaku), text: d.danmaku.join('\n') });
+    if (d.covers.length) blocks.push({ k: '封面大字', body: ol(d.covers), text: d.covers.join('\n') });
+
+    $('#kit-out').innerHTML =
+      '<div class="kit-card"><h5>主题<span class="cp" style="background:#fff;color:var(--sub);border-color:#EDEFF2;font-weight:600;">' + esc(topic) + '</span></h5></div>' +
+      blocks.map((b, i) =>
+        '<div class="kit-card"><h5>' + b.k + '<button class="cp" data-cp="' + i + '">复制</button></h5>' + b.body + '</div>'
+      ).join('') +
+      '<button class="btn-line block" id="btn-kit-tochat" style="margin-top:2px;">↩ 放进对话，继续追问</button>';
+
+    $$('#kit-out [data-cp]').forEach((btn) => btn.addEventListener('click', async () => {
+      const ok = await copyText(blocks[+btn.dataset.cp].text);
+      toast(ok ? '已复制' : '复制失败，长按手动选');
+    }));
+    const toChat = $('#btn-kit-tochat');
+    if (toChat) toChat.addEventListener('click', () => {
+      S.messages.push({ role: 'user', content: '给「' + topic + '」出一套标题、简介、弹幕和封面文案' });
+      S.messages.push({ role: 'assistant', content: kitMd(d) });
+      saveChat();
+      renderAll();
+      closeKit();
+      toast('已放进对话，可以接着追问');
+    });
+  }
+
+  async function kitGo() {
+    const topic = ($('#kit-topic').value || '').trim();
+    if (!topic) { toast('先写一句主题'); $('#kit-topic').focus(); return; }
+    if (S.streaming) { toast('先等当前回答结束'); return; }
+
+    const btn = $('#btn-kit-go');
+    const old = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '生成中…';
+    $('#kit-hint').textContent = '';
+    $('#kit-out').innerHTML = '<div class="kit-loading"><span class="typing"><i></i><i></i><i></i></span> 正在写标题、简介、弹幕、封面…</div>';
+
+    const ctrl = new AbortController();
+    let raw = '';
+    try {
+      await streamChat({
+        messages: [
+          { role: 'system', content: KIT_SYS },
+          { role: 'user', content: '主题：' + topic + '\n分区：' + (S.kitCat || '知识') + '\n按 JSON 输出。' }
+        ],
+        signal: ctrl.signal,
+        onDelta: (d) => { if (d.content) raw += d.content; }
+      });
+
+      const data = parseKit(raw);
+      if (data) {
+        renderKit(data, topic);
+        $('#kit-hint').textContent = '不满意可以再点一次「生成四件套」，每次结果都不一样。';
+      } else {
+        $('#kit-out').innerHTML =
+          '<div class="kit-card"><h5>模型没按格式回<button class="cp" id="kit-raw-cp">复制原文</button></h5>' +
+          '<div class="kit-li tx" style="max-height:260px;overflow:auto;">' + esc(String(raw).slice(0, 1500)) + '</div></div>';
+        $('#kit-hint').textContent = '换一次生成通常就好了。';
+        const rcp = $('#kit-raw-cp');
+        if (rcp) rcp.addEventListener('click', async () => toast(await copyText(raw) ? '已复制' : '复制失败'));
+      }
+    } catch (e) {
+      $('#kit-out').innerHTML = '<div class="kit-card"><h5>生成失败</h5><div class="kit-li tx">' + esc(friendlyError(e)) + '</div></div>';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = old;
+    }
+  }
+
+  /* ---------------- 工作台 / 四件套面板 ---------------- */
+  function syncMask() {
+    const any = $$('.sheet').some((el) => el.classList.contains('on')) || $('#dialog-exit').classList.contains('on');
+    if (any) mask.classList.add('on'); else mask.classList.remove('on');
+  }
+  function openMenu() {
+    renderSessions();
+    renderRoundUI();
+    const el = $('#sheet-menu');
+    if (el) el.classList.add('on');
+    mask.classList.add('on');
+  }
+  function closeMenu() {
+    const el = $('#sheet-menu');
+    if (el) el.classList.remove('on');
+    syncMask();
+  }
+  function openKit() {
+    closeMenu();
+    const el = $('#sheet-kit');
+    if (el) el.classList.add('on');
+    mask.classList.add('on');
+    setTimeout(() => { const t = $('#kit-topic'); if (t && !t.value) t.focus(); }, 320);
+  }
+  function closeKit() {
+    const el = $('#sheet-kit');
+    if (el) el.classList.remove('on');
+    syncMask();
+  }
 
   /* ---------------- 启动 ---------------- */
   async function boot() {
@@ -2587,6 +3158,11 @@
     applyProfile();
     $('#model-pill').textContent = modelName(S.model);
     $('#ver-line').textContent = CONFIG.VERSION;
+    const vl2 = $('#ver-line-2');
+    if (vl2) vl2.textContent = CONFIG.VERSION;
+    renderSessions();
+    renderRoundUI();
+    $$('#kit-cats .pchip').forEach((b) => b.classList.toggle('on', b.dataset.kcat === S.kitCat));
     updateSend();
     autoGrow();
 
