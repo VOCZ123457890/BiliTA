@@ -285,7 +285,7 @@
   .msg .ava img{width:100%;height:100%;object-fit:cover;}
   .msg .ava.bot{background:linear-gradient(135deg,var(--brand),var(--accent));display:grid;place-items:center;padding:4px;}
   .msg .ava.bot svg{width:100%;height:100%;}
-  .msg .body{min-width:0;max-width:var(--bubble-max);}
+  .msg .body{min-width:0;max-width:min(var(--bubble-max),100%);}
   .msg .who{font-size:11px;color:var(--sub);margin:0 0 5px 3px;font-weight:600;}
   .bubble{
     padding:11px 14px;border-radius:4px var(--bubble-radius) var(--bubble-radius) var(--bubble-radius);background:#fff;border:1px solid #EDEFF2;
@@ -293,7 +293,7 @@
     box-shadow:0 3px 12px rgba(24,25,28,.04);
   }
   .msg.user{flex-direction:row-reverse;}
-  .msg.user .body{max-width:var(--bubble-max);}
+  .msg.user .body{max-width:min(var(--bubble-max),100%);}
   .msg.user .who{text-align:right;margin:0 3px 5px 0;}
   .msg.user .bubble{
     background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border:none;
@@ -530,6 +530,18 @@
 
   html[data-form="desktop"] .bubble{padding:13px 17px;line-height:1.8;}
   html[data-form="tv"] .bubble{padding:16px 20px;line-height:1.85;}
+  /* 超窄嵌入（分栏/预览面板）：收起头像和多余留白，把宽度全留给正文 */
+  html[data-device="micro"] .msg .ava{display:none;}
+  html[data-device="micro"] .msg{gap:0;}
+  html[data-device="micro"] .msgs{padding-top:12px;}
+  html[data-device="micro"] .bubble{padding:9px 11px;line-height:1.7;}
+  html[data-device="micro"] .msg .who{margin-left:0;}
+  html[data-device="micro"] .topbar{padding:8px 9px;gap:6px;}
+  html[data-device="micro"] .brand .logo{width:26px;height:26px;flex-basis:26px;}
+  html[data-device="micro"] .brand h1{font-size:13px;}
+  html[data-device="micro"] .brand .sub{display:none;}
+  html[data-device="micro"] .brand .tag-free{display:none;}
+  html[data-device="micro"] .icon-btn{width:30px;height:30px;flex:0 0 30px;}
   html[data-form="desktop"] .empty h2{font-size:23px;}
   html[data-form="tv"] .empty h2{font-size:26px;}
   html[data-form="desktop"] .card{padding:14px 15px;}
@@ -799,7 +811,7 @@
       <div class="sect">
         <div class="label">关于</div>
         <div class="desc" style="margin-bottom:0;line-height:1.8;">
-          小破站 AI · <span id="ver-line">v3.5.0</span><br>
+          小破站 AI · <span id="ver-line">v3.5.1</span><br>
           直连智谱 BigModel，不经过中转。对用户免费、无广告、不收集对话。<br>
           Powered by Toy JS SDK.
         </div>
@@ -865,7 +877,8 @@
       <div class="sect">
         <div class="label">版本记录</div>
         <div class="desc" style="margin-bottom:0;line-height:1.9;">
-          <b>v3.5.0</b>（当前）· 直连优先 + 静默降级：App 内纯直连，浏览器被拦时自动切中转<br>
+          <b>v3.5.1</b>（当前）· 修复嵌入窄栏布局：按实际容器宽度选档，新增超窄嵌入档<br>
+          <b>v3.5.0</b> · 直连优先 + 静默降级：App 内纯直连，浏览器被拦时自动切中转<br>
           <b>v3.4.0</b> · 季节主题：冬天蓝白、夏天暖橙，设置里可手动固定<br>
           <b>v3.0.0-debug</b> · 重置基线：取消中转直连、默认免费档、旧版内容收进本入口<br>
           <b>v2.0.0</b> · 人格系统、展示图、GLM-5.3-Flash 默认<br>
@@ -908,7 +921,7 @@
 
   /* ---------------- 配置（部署时改这里） ---------------- */
   const CONFIG = {
-    VERSION: 'v3.5.0',
+    VERSION: 'v3.5.1',
     CHANNEL: 'debug',
 
     // 直连智谱开放平台（不经过任何中转）
@@ -1038,8 +1051,17 @@
    * ③ 把档位参数写进 CSS 变量，布局/字号/间距整体跟着变
    * ============================================================ */
   const DEVICE_PROFILES = {
+    // 超窄嵌入：被分栏、预览面板、侧边小窗塞进来的情况（实际宽度 < 300px）
+    'micro': {
+      form: 'phone', label: '超窄嵌入', min: 0, max: 299, center: 260,
+      vars: {
+        '--app-max': '100%', '--fs-base': '13px', '--pad-x': '9px',
+        '--bubble-max': '96%', '--msg-gap': '10px', '--bubble-radius': '12px',
+        '--gate-max': '100%', '--sheet-max': '100%'
+      }
+    },
     'phone-sm': {
-      form: 'phone', label: '小屏手机', min: 0, max: 359, center: 330,
+      form: 'phone', label: '小屏手机', min: 300, max: 359, center: 330,
       vars: {
         '--app-max': '100%', '--fs-base': '13.5px', '--pad-x': '14px',
         '--bubble-max': '84%', '--msg-gap': '14px', '--bubble-radius': '15px',
@@ -1111,11 +1133,18 @@
     const vw = Math.round(window.innerWidth || sw);
     const vh = Math.round(window.innerHeight || sh);
     if (!sw || !sh) { sw = vw; sh = vh; }
-    // 触屏以物理屏幕为准（软键盘/地址栏不干扰）；桌面以窗口为准（拖窗口就该换档）
-    const W = coarse ? sw : vw;
-    const H = coarse ? sh : vh;
-    const short = Math.min(W, H);
-    const wide = Math.max(W, H);
+    // 参数档位一律按「实际可用渲染宽度」定，物理屏幕只用于识别设备形态。
+    // 原因：Toy 可能被嵌在分栏 / 预览面板里（iPad 后台预览尤其常见），
+    // 此时 innerWidth 可能只有 200px，而 screen.width 仍是 834。
+    // 若按屏幕宽选档，24px 留白 + 30px 头像会被塞进 200px，气泡被挤成一字一行。
+    const realW = Math.round(document.documentElement.clientWidth || vw);
+    const realH = Math.round(window.innerHeight || vh);
+    const W = realW;
+    const H = realH;
+    const short = Math.min(realW, realH);
+    const wide = Math.max(realW, realH);
+    const physShort = Math.min(sw, sh);
+    const physWide = Math.max(sw, sh);
 
     const isHarmony = /OpenHarmony|HarmonyOS|ArkWeb/i.test(ua);
     let os = isHarmony ? 'harmony'
@@ -1149,7 +1178,7 @@
       } else if (/\bMobile\b/i.test(ua)) {
         form = 'phone'; source = 'ua'; reason = 'Mobile UA（含 App 内嵌）';
       } else if (/Windows|Macintosh|CrOS|X11|Linux/i.test(ua)) {
-        if (touch && wide < 1180) { form = 'tablet'; source = 'ua'; reason = '触屏小屏设备 → 按平板'; }
+        if (touch && physWide < 1180) { form = 'tablet'; source = 'ua'; reason = '触屏小屏设备 → 按平板'; }
         else { form = 'desktop'; source = 'ua'; reason = '桌面 UA'; }
       }
     }
@@ -1169,7 +1198,10 @@
 
     return {
       id: profile.id, form: profile.form, os: os, label: profile.label,
-      source: source, reason: reason, short: short, wide: wide, w: W, h: H, dpr: dpr
+      source: source, reason: reason, short: short, wide: wide, w: W, h: H,
+      physW: sw, physH: sh, dpr: dpr,
+      // 实际容器明显窄于物理屏 → 被嵌在分栏/预览面板里
+      constrained: short < physShort - 60
     };
   }
 
@@ -1178,6 +1210,9 @@
     const list = Object.keys(DEVICE_PROFILES).map((k) => Object.assign({ id: k }, DEVICE_PROFILES[k]));
     let pool = form ? list.filter((p) => p.form === form) : list;
     if (!pool.length) pool = list;
+    // 实际渲染宽度落到本形态档位之外时（如 iPad 后台预览被压成 200px 窄栏），
+    // 以宽度为准重新选档：否则会把平板档的 24px 留白、30px 头像套进 200px 容器
+    if (form && !pool.some((p) => short >= p.min && short <= p.max)) pool = list;
     let best = pool[0], bestScore = Infinity;
     pool.forEach((p) => {
       const inside = short >= p.min && short <= p.max;
@@ -1210,7 +1245,9 @@
 
     const el = $('#rail-device');
     if (el) {
-      const dim = d.w + '×' + d.h;
+      const dim = d.constrained
+        ? d.w + '×' + d.h + '（嵌在 ' + d.physW + '×' + d.physH + ' 屏内）'
+        : d.w + '×' + d.h;
       const ratio = d.dpr > 1 ? ' @' + (Math.round(d.dpr * 10) / 10) + 'x' : '';
       el.innerHTML = esc(OS_NAME[d.os] || '未知系统') + ' · ' + esc(p.label) + '<br>' +
         dim + ratio + ' · ' + (d.source === 'ua' ? 'UA 识别' : '分辨率匹配');
@@ -1224,6 +1261,21 @@
     rzTimer = setTimeout(applyDevice, 160);
   });
   window.addEventListener('orientationchange', () => setTimeout(applyDevice, 240));
+
+  // 分栏 / 预览面板 / 后台透出这类场景不会触发 window.resize，
+  // 但容器宽度确实变了 → 用 ResizeObserver 兜住，重新按实际宽度选档
+  if (window.ResizeObserver) {
+    let roTimer = 0;
+    let roLast = Math.round(document.documentElement.clientWidth || 0);
+    const ro = new ResizeObserver(() => {
+      const w = Math.round(document.documentElement.clientWidth || 0);
+      if (!w || Math.abs(w - roLast) < 12) return;
+      roLast = w;
+      clearTimeout(roTimer);
+      roTimer = setTimeout(applyDevice, 150);
+    });
+    ro.observe(document.documentElement);
+  }
 
 
   /* ---------------- 吉祥物 ---------------- */
