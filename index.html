@@ -243,7 +243,7 @@
     flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
     padding:24px 26px calc(28px + var(--safe-b));text-align:center;position:relative;overflow:auto;
   }
-  .gate-mascot{width:132px;height:132px;margin-bottom:10px;animation:float 5s ease-in-out infinite;}
+  .gate-mascot{width:118px;height:118px;margin-bottom:8px;animation:float 5s ease-in-out infinite;}
   @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
   .gate h1{font-size:29px;margin:6px 0 8px;font-weight:900;letter-spacing:-.5px;}
   .gate h1 .grad{
@@ -251,7 +251,7 @@
     -webkit-background-clip:text;background-clip:text;color:transparent;
   }
   .gate p.lead{margin:0 0 18px;font-size:13.5px;line-height:1.7;color:var(--sub);max-width:var(--gate-max);}
-  .chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:26px;}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:22px;}
   .chips .c{font-size:11.5px;font-weight:600;color:var(--ink-2);background:#fff;border:1px solid var(--line);padding:6px 11px;border-radius:99px;box-shadow:0 2px 8px rgba(24,25,28,.03);}
   .cta{
     width:100%;max-width:var(--gate-max);height:52px;border-radius:16px;
@@ -276,7 +276,7 @@
   /* ============ 聊天页 ============ */
   .msgs{
     flex:1;overflow-y:auto;overflow-x:hidden;
-    padding:18px var(--pad-x) 10px;display:flex;flex-direction:column;gap:var(--msg-gap);
+    padding:14px var(--pad-x) 10px;display:flex;flex-direction:column;gap:var(--msg-gap);
     scroll-behavior:smooth;-webkit-overflow-scrolling:touch;
   }
   .msg{display:flex;gap:9px;max-width:100%;animation:msgIn .32s cubic-bezier(.22,1,.36,1) both;}
@@ -346,9 +346,9 @@
     flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
     padding:10px 6px 24px;text-align:center;min-height:100%;
   }
-  .empty .m{width:86px;height:86px;margin-bottom:12px;opacity:.96;}
+  .empty .m{width:74px;height:74px;margin-bottom:10px;opacity:.96;}
   .empty h2{font-size:20px;margin:0 0 6px;font-weight:900;letter-spacing:-.2px;}
-  .empty p{margin:0 0 20px;font-size:12.5px;color:var(--sub);}
+  .empty p{margin:0 0 16px;font-size:12.5px;color:var(--sub);}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%;max-width:min(100%,520px);}
   .card{
     text-align:left;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 13px;
@@ -356,7 +356,7 @@
   }
   .card:hover{border-color:var(--brand-line);box-shadow:0 8px 20px var(--brand-glow-2);transform:translateY(-1px);}
   .card:active{transform:scale(.98);}
-  .card .ic{font-size:16px;margin-bottom:6px;display:block;}
+  .card .ic{width:30px;height:30px;border-radius:9px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;margin-bottom:8px;}
   .card .t{font-size:12.5px;font-weight:700;margin-bottom:2px;}
   .card .d{font-size:11px;color:var(--sub);line-height:1.5;}
 
@@ -811,7 +811,7 @@
       <div class="sect">
         <div class="label">关于</div>
         <div class="desc" style="margin-bottom:0;line-height:1.8;">
-          小破站 AI · <span id="ver-line">v3.5.1</span><br>
+          小破站 AI · <span id="ver-line">v3.5.2</span><br>
           直连智谱 BigModel，不经过中转。对用户免费、无广告、不收集对话。<br>
           Powered by Toy JS SDK.
         </div>
@@ -877,7 +877,8 @@
       <div class="sect">
         <div class="label">版本记录</div>
         <div class="desc" style="margin-bottom:0;line-height:1.9;">
-          <b>v3.5.1</b>（当前）· 修复嵌入窄栏布局：按实际容器宽度选档，新增超窄嵌入档<br>
+          <b>v3.5.2</b>（当前）· 空态/欢迎页布局优化：快捷卡片改用 SVG 图标，间距收紧<br>
+          <b>v3.5.1</b> · 修复嵌入窄栏布局：按实际容器宽度选档，新增超窄嵌入档<br>
           <b>v3.5.0</b> · 直连优先 + 静默降级：App 内纯直连，浏览器被拦时自动切中转<br>
           <b>v3.4.0</b> · 季节主题：冬天蓝白、夏天暖橙，设置里可手动固定<br>
           <b>v3.0.0-debug</b> · 重置基线：取消中转直连、默认免费档、旧版内容收进本入口<br>
@@ -921,7 +922,7 @@
 
   /* ---------------- 配置（部署时改这里） ---------------- */
   const CONFIG = {
-    VERSION: 'v3.5.1',
+    VERSION: 'v3.5.2',
     CHANNEL: 'debug',
 
     // 直连智谱开放平台（不经过任何中转）
@@ -1008,11 +1009,18 @@
     }
   };
 
+  const ICONS = {
+    pen: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
+    code: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+    chat: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    video: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>'
+  };
+
   const SUGGESTIONS = [
-    { icon: '✍️', t: '起个标题', d: '给视频想 5 个标题党标题', q: '我拍了一个关于「大学生如何在宿舍做减脂餐」的视频，帮我起 5 个B站风格的标题，要有梗但不骗人。' },
-    { icon: '💻', t: '看代码', d: '解释或修一段报错', q: '帮我看看这段 Python 为什么会报 IndexError，以及怎么改：\n\n```python\ndef last(arr):\n    return arr[len(arr)]\n```' },
-    { icon: '💬', t: '高情商回复', d: '把话说得不得罪人', q: '同事总在下班前五分钟给我派活，我想拒绝又不想撕破脸，帮我写一段回复。' },
-    { icon: '🎬', t: '写脚本', d: '30 秒短视频分镜', q: '帮我写一个 30 秒的短视频脚本，主题是「劝室友别熬夜」，要搞笑，适合宿舍场景，按分镜表格给我。' }
+    { icon: ICONS.pen, t: '起个标题', d: '给视频想 5 个标题党标题', q: '我拍了一个关于「大学生如何在宿舍做减脂餐」的视频，帮我起 5 个B站风格的标题，要有梗但不骗人。' },
+    { icon: ICONS.code, t: '看代码', d: '解释或修一段报错', q: '帮我看看这段 Python 为什么会报 IndexError，以及怎么改：\n\n```python\ndef last(arr):\n    return arr[len(arr)]\n```' },
+    { icon: ICONS.chat, t: '高情商回复', d: '把话说得不得罪人', q: '同事总在下班前五分钟给我派活，我想拒绝又不想撕破脸，帮我写一段回复。' },
+    { icon: ICONS.video, t: '写脚本', d: '30 秒短视频分镜', q: '帮我写一个 30 秒的短视频脚本，主题是「劝室友别熬夜」，要搞笑，适合宿舍场景，按分镜表格给我。' }
   ];
 
   /* ---------------- 状态 ---------------- */
