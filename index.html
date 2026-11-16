@@ -778,6 +778,19 @@
       </div>
 
       <div class="sect">
+        <div class="label">连接方式 <span class="kstate" id="chan-state">自动</span></div>
+        <div class="desc">「自动」= 先直连智谱，被浏览器跨域拦住时<b>静默</b>改走中转，用户无感知。B站 App 内的 WebView 通常能直连。</div>
+        <div class="personas" id="chan-opts"></div>
+        <input class="field" id="relay-input" type="url" placeholder="中转地址（可选），如 https://bili-toy-relay.xxx.workers.dev" autocomplete="off" spellcheck="false" style="margin-top:10px;" />
+        <div class="row" style="margin-top:8px;">
+          <button class="btn-line" id="btn-relay-save" style="flex:1;">保存地址</button>
+          <button class="btn-line" id="btn-relay-test" style="flex:1;">测试中转</button>
+          <button class="btn-line warn" id="btn-relay-clear" style="flex:0 0 auto;">清空</button>
+        </div>
+        <div class="desc" id="relay-hint" style="margin:8px 0 0;line-height:1.65;"></div>
+      </div>
+
+      <div class="sect">
         <div class="label">投币解锁 <span class="tag-free" style="background:#FFF1E6;color:#C2410C;">v4</span></div>
         <div class="desc">正式版起，GLM-5.3 系列将改为投币解锁：<b>1 枚硬币 → 100 点创作激励 → 1 天额度</b>。当前 debug 版全量开放，不扣币。</div>
         <button class="btn-line block" id="btn-coin" style="border-color:#FFE0C2;background:#FFF9F3;color:#C2410C;">投币解锁（即将开放）</button>
@@ -786,7 +799,7 @@
       <div class="sect">
         <div class="label">关于</div>
         <div class="desc" style="margin-bottom:0;line-height:1.8;">
-          小破站 AI · <span id="ver-line">v3.4.0</span><br>
+          小破站 AI · <span id="ver-line">v3.5.0</span><br>
           直连智谱 BigModel，不经过中转。对用户免费、无广告、不收集对话。<br>
           Powered by Toy JS SDK.
         </div>
@@ -852,7 +865,8 @@
       <div class="sect">
         <div class="label">版本记录</div>
         <div class="desc" style="margin-bottom:0;line-height:1.9;">
-          <b>v3.4.0</b>（当前）· 季节主题：冬天蓝白、夏天暖橙，设置里可手动固定<br>
+          <b>v3.5.0</b>（当前）· 直连优先 + 静默降级：App 内纯直连，浏览器被拦时自动切中转<br>
+          <b>v3.4.0</b> · 季节主题：冬天蓝白、夏天暖橙，设置里可手动固定<br>
           <b>v3.0.0-debug</b> · 重置基线：取消中转直连、默认免费档、旧版内容收进本入口<br>
           <b>v2.0.0</b> · 人格系统、展示图、GLM-5.3-Flash 默认<br>
           <b>v1.0.0</b> · 中转版首发，Cloudflare Worker + 流式对话
@@ -894,14 +908,14 @@
 
   /* ---------------- 配置（部署时改这里） ---------------- */
   const CONFIG = {
-    VERSION: 'v3.4.0',
+    VERSION: 'v3.5.0',
     CHANNEL: 'debug',
 
     // 直连智谱开放平台（不经过任何中转）
     API_BASE: 'https://open.bigmodel.cn/api/paas/v4',
-    // 你的智谱 Key（仓库版已清空，防止公开泄露被刷额度）
+    // 作者内置 Key（已实测可用：免费档 200，GLM-5.3 余额不足 1113）
     // ⚠️ 前端代码任何人可见，建议用单独的 Key，随时可在控制台吊销
-    API_KEY: '',   // ← 在这里填你自己的智谱 Key（open.bigmodel.cn → API Keys）
+    API_KEY: '',
 
     // 默认模型：免费档，实测稳定返回 200
     // GLM-5.3 仍是「推荐」，但需要账户余额；余额不足时会自动降级到这里
@@ -914,7 +928,19 @@
 
     /* 季节主题：'auto' 按月份自动（6–9 月暖橙，其余蓝白）
        'winter' = 冬季蓝白，'summer' = 夏季暖橙。用户可在设置里覆盖 */
-    THEME: 'auto'
+    THEME: 'auto',
+
+    /* ---------- 连接方式（方案一：直连优先 + 静默降级） ----------
+     * CHANNEL: 'auto'   先直连智谱，被跨域拦住时自动改走中转（推荐）
+     *          'direct' 只用直连（B站 App 内可用，纯浏览器会失败）
+     *          'relay'  只用中转（Key 放 Worker 里，前端不带 Key）
+     * RELAY:  中转地址，例如 'https://bili-toy-relay.xxx.workers.dev'
+     *         留空则只走直连；填了就有兜底，浏览器环境也不会挂
+     * RELAY_TOKEN: 与 Worker 的 TOY_TOKEN 保持一致（Worker 没设就留空）
+     */
+    CHANNEL: 'auto',
+    RELAY: '',
+    RELAY_TOKEN: ''
   };
 
   // plan: free = 官方 0 元档；paid = 按量计费（作者垫付 / 未来投币解锁）
@@ -986,8 +1012,10 @@
     model: CONFIG.DEFAULT_MODEL,
     persona: 'default',
     temp: 0.7,
-    relay: '',            // 仅旧版中转用
-    legacyOn: false,      // 旧版引擎开关
+    relay: '',            // 中转地址（直连失败时兜底）
+    legacyOn: false,      // 旧版工具箱里的强制中转开关
+    channel: CONFIG.CHANNEL,   // auto | direct | relay
+    directBlocked: false,      // 本会话内直连是否被跨域拦过
     coinGate: false,      // v4 投币门槛预览
     ownKey: '',
     theme: CONFIG.THEME,  // auto | winter | summer
@@ -1288,14 +1316,20 @@
       if (typeof p.ownKey === 'string') S.ownKey = p.ownKey;
       if (p.theme === 'auto' || p.theme === 'winter' || p.theme === 'summer') S.theme = p.theme;
       if (typeof p.relay === 'string') S.relay = p.relay;
+      if (p.channel === 'auto' || p.channel === 'direct' || p.channel === 'relay') S.channel = p.channel;
       if (typeof p.legacyOn === 'boolean') S.legacyOn = p.legacyOn && !!p.relay;
       if (typeof p.coinGate === 'boolean') S.coinGate = p.coinGate;
       if (p.stats) S.stats = Object.assign(S.stats, p.stats);
     } catch (e) { /* ignore */ }
-    // 本地调试用：?relay=http://localhost:8788 可直接启用旧版中转
+    // CONFIG.RELAY 作为出厂默认值（用户没在设置里填过才生效）
+    if (!S.relay && CONFIG.RELAY) S.relay = CONFIG.RELAY;
+    if (S.channel === 'auto' && CONFIG.CHANNEL && CONFIG.CHANNEL !== 'auto') S.channel = CONFIG.CHANNEL;
+    // 本地调试用：?relay=http://localhost:8788 直接指定中转地址
     try {
       const q = new URLSearchParams(location.search).get('relay');
-      if (q) { S.relay = q; S.legacyOn = true; }
+      if (q) { S.relay = q; }
+      const c = new URLSearchParams(location.search).get('channel');
+      if (c === 'auto' || c === 'direct' || c === 'relay') S.channel = c;
     } catch (e) {}
   }
   function savePrefs() {
@@ -1303,6 +1337,7 @@
       localStorage.setItem(LS_PREFS, JSON.stringify({
         model: S.model, persona: S.persona, temp: S.temp,
         ownKey: S.ownKey, relay: S.relay, legacyOn: S.legacyOn,
+        channel: S.channel,
         coinGate: S.coinGate, stats: S.stats, theme: S.theme
       }));
     } catch (e) {}
@@ -1653,7 +1688,7 @@
   function friendlyError(err) {
     const s = String((err && err.message) || err || '');
     if (/abort/i.test(s)) return '已停止生成。';
-    if (/CORS_BLOCKED/.test(s)) return '浏览器拦下了这次请求：智谱接口不允许网页直连（跨域预检不通过），和 Key 无关。可以在旧版工具箱里启用中转兜底。';
+    if (/CORS_BLOCKED/.test(s)) return '浏览器拦下了这次请求：智谱接口不允许网页直连（跨域预检不通过），和 Key 无关。到设置 →「连接方式」填一个中转地址，之后会自动兜底。';
     if (/Failed to fetch|NetworkError|network/i.test(s)) return '网络请求失败，检查一下网络后重试。';
     if (/1113|余额不足/.test(s)) return '这个模型的账户余额不足。已尝试自动切到免费模型，还不行就在设置里换一个带「免费」标签的模型。';
     if (/1305|访问量过大/.test(s)) return '这个模型现在访问量太大，等几秒再试，或换个免费模型。';
@@ -1695,31 +1730,100 @@
     $('#stat-days').textContent = days;
   }
 
-  /* ---------------- 网络：SSE ---------------- */
-  function usingLegacy() { return !!(S.legacyOn && S.relay); }
-  function endpoint() {
-    return usingLegacy()
-      ? S.relay.replace(/\/+$/, '') + '/v1/chat'
+  /* ---------------- 网络：直连优先 + 静默降级 ----------------
+   * auto   ：先直连智谱；被跨域拦住（浏览器环境）就自动切中转，用户无感知
+   * direct ：只用直连（B站 App 内 WebView 关了同源检查，可直连）
+   * relay  ：只用中转（Key 留在 Worker，前端不带 Key）
+   * ---------------------------------------------------------- */
+  const relayBase = () => String(S.relay || '').trim().replace(/\/+$/, '');
+  const apiKey = () => String(S.ownKey || CONFIG.API_KEY || '').trim();
+
+  // 旧版工具箱里的「强制中转」开关
+  function usingLegacy() { return !!(S.legacyOn && relayBase()); }
+
+  // 当前实际该走哪条路：direct | relay | demo
+  function channelNow() {
+    const hasKey = !!apiKey();
+    const hasRelay = !!relayBase();
+    if (S.channel === 'relay' || usingLegacy()) return hasRelay ? 'relay' : (hasKey ? 'direct' : 'demo');
+    if (S.channel === 'direct') return hasKey ? 'direct' : (hasRelay ? 'relay' : 'demo');
+    // auto：直连优先
+    if (!hasKey && hasRelay) return 'relay';                 // 自己没有 Key，借用中转那枚
+    if (hasKey && S.directBlocked && hasRelay) return 'relay'; // 本会话已被拦过，别重复撞墙
+    if (hasKey) return 'direct';
+    return hasRelay ? 'relay' : 'demo';
+  }
+
+  function endpointFor(via) {
+    return via === 'relay'
+      ? relayBase() + '/v1/chat'
       : CONFIG.API_BASE + '/chat/completions';
   }
 
-  async function streamChat({ messages, signal, onDelta, _retry }) {
-    const legacy = usingLegacy();
-    const key = (S.ownKey || CONFIG.API_KEY || '').trim();
+  const CHANNEL_TEXT = { direct: '直连智谱', relay: '中转', demo: '演示模式' };
 
-    // 既没有 Key、也没有旧版通道 → 演示模式
-    if (!legacy && !key) return demoStream(messages, onDelta, signal);
+  const CHAN_OPTS = [
+    { k: 'auto', n: '⚡ 自动（直连优先）' },
+    { k: 'direct', n: '🔗 仅直连' },
+    { k: 'relay', n: '☁️ 仅中转' }
+  ];
+  const CHAN_NAME = { auto: '自动', direct: '仅直连', relay: '仅中转' };
+
+  function refreshChanState() {
+    const tag = $('#chan-state');
+    const via = channelNow();
+    if (tag) {
+      tag.className = 'kstate' + (via === 'demo' ? '' : ' ok');
+      tag.textContent = CHAN_NAME[S.channel] + ' · ' + CHANNEL_TEXT[via];
+    }
+    const hint = $('#relay-hint');
+    if (hint) {
+      if (!relayBase()) {
+        hint.innerHTML = '未填中转地址：只靠直连，在电脑/手机<b>浏览器</b>里打开会失败（B站 App 内一般没问题）。';
+      } else {
+        hint.innerHTML = '当前中转：<b>' + esc(relayBase()) + '</b>' +
+          (S.directBlocked ? ' ｜ 直连已被拦，已自动走中转' : '');
+      }
+    }
+  }
+
+  function renderChanOpts() {
+    const box = $('#chan-opts');
+    if (!box) return;
+    box.innerHTML = CHAN_OPTS.map((o) =>
+      '<button class="pchip' + (o.k === S.channel ? ' on' : '') + '" data-chan="' + o.k + '">' + o.n + '</button>'
+    ).join('');
+    $$('#chan-opts .pchip').forEach((b) => b.addEventListener('click', () => {
+      S.channel = b.dataset.chan;
+      S.directBlocked = false;   // 换方式后重新试一次直连
+      savePrefs();
+      renderChanOpts();
+      ping();
+      toast('连接方式：' + CHAN_NAME[S.channel]);
+    }));
+    const ri = $('#relay-input');
+    if (ri && document.activeElement !== ri) ri.value = S.relay || '';
+    refreshChanState();
+  }
+
+  async function streamChat({ messages, signal, onDelta, _retry, _via }) {
+    const key = apiKey();
+    const via = _via || channelNow();
+
+    // 既没有 Key、也没有中转 → 演示模式
+    if (via === 'demo') return demoStream(messages, onDelta, signal);
 
     const headers = { 'Content-Type': 'application/json' };
-    if (legacy) {
+    if (via === 'relay') {
       if (key) headers['X-User-Key'] = key;
+      if (CONFIG.RELAY_TOKEN) headers['X-Toy-Token'] = CONFIG.RELAY_TOKEN;
     } else {
       headers['Authorization'] = 'Bearer ' + key;
     }
 
     let res;
     try {
-      res = await fetch(endpoint(), {
+      res = await fetch(endpointFor(via), {
         method: 'POST',
         headers: headers,
         signal: signal,
@@ -1732,8 +1836,17 @@
       });
     } catch (e) {
       if (e && (e.name === 'AbortError' || /abort/i.test(String(e.message)))) throw e;
-      // 浏览器把请求拦在预检阶段：智谱接口不返回 ACAO
-      throw new Error('CORS_BLOCKED');
+
+      // 直连被浏览器跨域拦住 → 有中转就静默切过去，不打扰用户
+      if (via === 'direct') {
+        S.directBlocked = true;
+        if (relayBase() && S.channel === 'auto') {
+          try { ping(); } catch (e2) {}
+          return streamChat({ messages, signal, onDelta, _retry, _via: 'relay' });
+        }
+        throw new Error('CORS_BLOCKED');
+      }
+      throw new Error('中转连不上（' + relayBase() + '），检查地址是否可访问');
     }
 
     if (!res.ok) {
@@ -1757,7 +1870,7 @@
         toast(code === 1113
           ? '当前账户余额不足，已自动切到免费模型 ' + modelName(S.model)
           : '当前模型限流，已自动切到 ' + modelName(S.model), 3400);
-        return streamChat({ messages: messages, signal: signal, onDelta: onDelta, _retry: true });
+        return streamChat({ messages: messages, signal: signal, onDelta: onDelta, _retry: true, _via: via });
       }
 
       throw new Error((res.status === 401 ? '401 ' : res.status === 429 ? '429 ' : res.status + ' ') + (msg || res.statusText));
@@ -1807,19 +1920,24 @@
 
   /* ---------------- 健康检查 ---------------- */
   async function ping() {
-    if (usingLegacy()) {
+    const via = channelNow();
+    const brief = DEVICE.form === 'phone';
+
+    if (via === 'relay') {
       try {
-        const r = await fetch(S.relay.replace(/\/+$/, '') + '/health', { method: 'GET' });
+        const r = await withTimeout(fetch(relayBase() + '/health', { method: 'GET' }), 6000, 'timeout');
         const j = await r.json().catch(() => ({}));
-        if (r.ok && j.ok !== false) setOnline(true, '旧版中转在线');
-        else setOnline(false, '旧版中转异常');
-      } catch (e) { setOnline(false, '旧版中转未连接'); }
+        if (r.ok && j.ok !== false) {
+          setOnline(true, S.directBlocked
+            ? (brief ? '已走中转' : '直连被浏览器拦下 · 已走中转')
+            : (brief ? '中转在线' : '中转 · ' + modelName(S.model)));
+        } else setOnline(false, '中转异常');
+      } catch (e) { setOnline(false, '中转未连接'); }
       return;
     }
-    const key = (S.ownKey || CONFIG.API_KEY || '').trim();
-    const brief = DEVICE.form === 'phone';
-    if (!key) setOnline(false, brief ? '演示模式' : '演示模式 · 未配置 Key');
-    else setOnline(true, (brief ? '' : '直连智谱 · ') + modelName(S.model));
+
+    if (via === 'demo') { setOnline(false, brief ? '演示模式' : '演示模式 · 未配置 Key'); return; }
+    setOnline(true, (brief ? '' : '直连智谱 · ') + modelName(S.model));
   }
 
   function setOnline(ok, text) {
@@ -1835,8 +1953,8 @@
     if (t1) t1.textContent = text;
     if (t2) t2.textContent = text + suffix;
 
-    const key = (S.ownKey || CONFIG.API_KEY || '').trim();
-    const demo = !usingLegacy() && !key;
+    const via = channelNow();
+    const demo = via === 'demo';
     $('#banner').style.display = demo ? 'flex' : 'none';
     if (demo) $('#banner-text').innerHTML = '<b>演示模式：</b>还没填 API Key，回复是本地模拟的。点右上角设置 →「我的 API Key」填一个就能接上真实模型。';
     const pill = $('#model-pill');
@@ -2013,6 +2131,7 @@
     }));
     renderThemeOpts();
     applyTheme();
+    renderChanOpts();
     $('#ver-line').textContent = CONFIG.VERSION;
     const ki = $('#key-input');
     if (ki && document.activeElement !== ki) ki.value = S.ownKey;
@@ -2118,6 +2237,55 @@
     toast('已清除');
   });
 
+  /* ---------------- 中转地址 ---------------- */
+  const relayBounds = () => String($('#relay-input') ? $('#relay-input').value : '').trim().replace(/\/+$/, '');
+
+  $('#btn-relay-save').addEventListener('click', () => {
+    const v = relayBounds();
+    if (v && !/^https?:\/\//i.test(v)) { toast('地址要以 http:// 或 https:// 开头', 3000); return; }
+    S.relay = v;
+    S.directBlocked = false;
+    S.legacyOn = false;
+    savePrefs();
+    renderChanOpts();
+    ping();
+    toast(v ? '已保存中转地址' : '已清空，只走直连');
+  });
+
+  $('#btn-relay-test').addEventListener('click', async () => {
+    const v = relayBounds();
+    if (!v) { toast('先填一个中转地址'); return; }
+    const b = $('#btn-relay-test');
+    const old = b.textContent;
+    b.disabled = true;
+    b.textContent = '测试中…';
+    try {
+      const r = await withTimeout(fetch(v + '/health', { method: 'GET' }), 9000, 'timeout');
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.ok !== false) {
+        toast(j.hasKey ? '中转正常，服务端已配 Key' : '中转通了，但服务端没配 ZHIPU_API_KEY', 3600);
+      } else {
+        toast('中转返回异常：HTTP ' + r.status, 3200);
+      }
+    } catch (e) {
+      toast('连不上这个地址：' + (e && e.message || e), 3600);
+    } finally {
+      b.disabled = false;
+      b.textContent = old;
+    }
+  });
+
+  $('#btn-relay-clear').addEventListener('click', () => {
+    S.relay = '';
+    S.directBlocked = false;
+    const ri = $('#relay-input');
+    if (ri) ri.value = '';
+    savePrefs();
+    renderChanOpts();
+    ping();
+    toast('已清空中转地址（只走直连）');
+  });
+
   // 模型选择（事件委托，列表会重绘）
   $('#model-opts').addEventListener('click', (e) => {
     const btn = e.target.closest('.opt');
@@ -2177,7 +2345,10 @@
       '档位：' + DEVICE.id + '（' + (DEVICE.source === 'ua' ? 'UA 识别' : '分辨率匹配') + '：' + esc(DEVICE.reason) + '）<br>' +
       '环境：' + env + ' · ' + host + '<br>' +
       'Toy SDK：' + (hasToy() ? '已加载' : '未加载') + '<br>' +
-      '引擎：' + (usingLegacy() ? '旧版中转 ' + esc(S.relay) : '直连 ' + CONFIG.API_BASE) + '<br>' +
+      '通道：' + CHAN_NAME[S.channel] + ' → ' + CHANNEL_TEXT[channelNow()] +
+        (S.directBlocked ? '（直连已被跨域拦截）' : '') + '<br>' +
+      '直连：' + CONFIG.API_BASE + '<br>' +
+      '中转：' + (relayBase() ? esc(relayBase()) : '未配置') + '<br>' +
       'Key：' + ((S.ownKey || CONFIG.API_KEY) ? '已配置（' + ((S.ownKey || CONFIG.API_KEY).slice(0, 6)) + '…）' : '未配置') + '<br>' +
       '模型：' + (MODELS[S.model] ? MODELS[S.model].full : S.model);
   }
@@ -2197,6 +2368,7 @@
     S.legacyOn = !!v;
     savePrefs();
     syncLegacy();
+    renderChanOpts();
     ping().then(() => toast(v ? '已保存并启用旧版中转' : '已清除中转'));
   });
   $('#legacy-test').addEventListener('click', async () => {
