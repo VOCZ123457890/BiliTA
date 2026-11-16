@@ -732,6 +732,7 @@
       <h2>已退出小破站 AI</h2>
       <p id="bye-tip">感谢使用。对用户永久免费、无广告，模型额度由作者垫付。</p>
       <button class="cta" style="max-width:260px;height:46px;" id="btn-reenter">重新进入</button>
+      <button id="btn-back-bili" style="margin-top:10px;max-width:260px;width:100%;height:44px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--ink-2);font-size:13px;font-weight:700;cursor:pointer;">返回 B站 Toy 广场</button>
     </div>
   </section>
 
@@ -811,7 +812,7 @@
       <div class="sect">
         <div class="label">关于</div>
         <div class="desc" style="margin-bottom:0;line-height:1.8;">
-          小破站 AI · <span id="ver-line">v3.5.2</span><br>
+          小破站 AI · <span id="ver-line">v3.5.3</span><br>
           直连智谱 BigModel，不经过中转。对用户免费、无广告、不收集对话。<br>
           Powered by Toy JS SDK.
         </div>
@@ -877,7 +878,8 @@
       <div class="sect">
         <div class="label">版本记录</div>
         <div class="desc" style="margin-bottom:0;line-height:1.9;">
-          <b>v3.5.2</b>（当前）· 空态/欢迎页布局优化：快捷卡片改用 SVG 图标，间距收紧<br>
+          <b>v3.5.3</b>（当前）· 退出修复：SDK 失败后自动 history.back 兜底，退出页显示诊断 + 返回广场按钮<br>
+          <b>v3.5.2</b> · 空态/欢迎页布局优化：快捷卡片改用 SVG 图标，间距收紧<br>
           <b>v3.5.1</b> · 修复嵌入窄栏布局：按实际容器宽度选档，新增超窄嵌入档<br>
           <b>v3.5.0</b> · 直连优先 + 静默降级：App 内纯直连，浏览器被拦时自动切中转<br>
           <b>v3.4.0</b> · 季节主题：冬天蓝白、夏天暖橙，设置里可手动固定<br>
@@ -922,7 +924,7 @@
 
   /* ---------------- 配置（部署时改这里） ---------------- */
   const CONFIG = {
-    VERSION: 'v3.5.2',
+    VERSION: 'v3.5.3',
     CHANNEL: 'debug',
 
     // 直连智谱开放平台（不经过任何中转）
@@ -2081,22 +2083,55 @@
   const showExiting = () => $('#exiting').classList.add('on');
   const hideExiting = () => $('#exiting').classList.remove('on');
 
+  const isPreviewPage = () => /^\/toy\/preview(?:\/|$)/.test(location.pathname);
+
+  function errText(e) {
+    if (!e) return 'unknown';
+    return String(e.code || e.message || e.name || e).slice(0, 60);
+  }
+
   /**
-   * 直接调用官方 toy.closeBrowser()，不做 isSupport 预检。
-   * isSupport 本身要走 jsb 通信，在没有原生桥的环境会挂起，
-   * 反而会把真正的关闭动作挡在后面 —— 这是之前「只弹界面没退出」的根因。
+   * 依次尝试三种关闭方式，并记录每一步的真实结果。
+   * ① toy.closeBrowser() —— 官方接口，底层是 jsb 调用原生关闭
+   * ② history.back()      —— App 内 WebView 通常有上一页（Toy 详情/广场）
+   * ③ window.close()      —— 仅脚本打开的窗口才允许
+   * 返回的 steps 会显示在退出页上，点一次就知道卡在哪一步。
    */
-  async function closeBySdk(timeoutMs) {
-    if (!hasToy() || typeof toy.closeBrowser !== 'function') return false;
-    try {
-      const ret = toy.closeBrowser();
-      if (ret && typeof ret.then === 'function') {
-        await withTimeout(ret, timeoutMs || 1200, 'close-timeout');
+  async function tryCloseAll() {
+    const steps = [];
+
+    if (hasToy() && typeof toy.closeBrowser === 'function') {
+      try {
+        await withTimeout(Promise.resolve(toy.closeBrowser()), 1500, 'timeout');
+        steps.push({ k: 'toy.closeBrowser', ok: true, err: '' });
+        return { ok: true, steps };
+      } catch (e) {
+        steps.push({ k: 'toy.closeBrowser', ok: false, err: errText(e) });
       }
-      return true; // 原生已受理（页面随即被销毁）
-    } catch (e) {
-      return false; // web 端抛 unsupported；超时同样视为未关闭
+    } else {
+      steps.push({ k: 'toy.closeBrowser', ok: false, err: 'SDK 未加载' });
     }
+
+    if (history.length > 1) {
+      try {
+        history.back();
+        steps.push({ k: 'history.back', ok: true, err: '' });
+        return { ok: true, steps, soft: true };
+      } catch (e) {
+        steps.push({ k: 'history.back', ok: false, err: errText(e) });
+      }
+    } else {
+      steps.push({ k: 'history.back', ok: false, err: '无历史记录' });
+    }
+
+    try {
+      window.close();
+      steps.push({ k: 'window.close', ok: true, err: '' });
+    } catch (e) {
+      steps.push({ k: 'window.close', ok: false, err: errText(e) });
+    }
+
+    return { ok: false, steps };
   }
 
   async function doExit() {
@@ -2113,32 +2148,31 @@
     // 关闭很快时，遮罩刚渲染就被销毁会闪一下，所以延迟出现
     const overlayTimer = setTimeout(showExiting, 140);
 
-    const accepted = await closeBySdk(1200);
-
-    if (accepted) {
-      // 原生已受理，页面通常已经没了；若还活着（预览 / 被容器拦截）再等一会儿
-      await sleep(700);
-    }
+    const res = await tryCloseAll();
+    if (res.ok) await sleep(res.soft ? 400 : 700);
 
     clearTimeout(overlayTimer);
     hideExiting();
 
-    // Web 兜底：只有脚本打开的窗口才允许 window.close()
-    if (!accepted) {
-      try { window.close(); } catch (e) {}
-      await sleep(280);
-    }
-
-    // 能走到这里说明页面仍然存在，只能展示退出页并说明原因
+    // 能走到这里说明页面仍然存在：展示退出页 + 真实诊断
     $('#view-chat').classList.remove('active');
     $('#view-gate').classList.remove('active');
     $('#view-bye').classList.add('active');
+
     const tip = $('#bye-tip');
     if (tip) {
-      tip.textContent = accepted
-        ? '已经调用 Toy 关闭接口。如果页面还在，说明当前容器拒绝关闭，手动返回即可，对话记录已保存。'
-        : '浏览器预览环境不允许网页关闭自己（window.close 被拦），请手动关闭标签页。对话记录已保存在本机。';
+      const bad = res.steps.filter((s) => !s.ok);
+      if (res.ok) {
+        tip.textContent = '已请求关闭。如果页面还在，说明当前容器没有响应关闭指令，可点下方「返回 B站 Toy 广场」离开。对话记录已保存。';
+      } else if (isPreviewPage()) {
+        tip.textContent = '当前是作者预览页（/toy/preview/），平台规定预览页禁止关闭页面，这是正常现象，发布后在正式入口点退出才会真正关闭。';
+      } else if (!hasToy()) {
+        tip.textContent = '当前没有检测到 B站 Toy SDK（普通浏览器直接打开），网页无权关闭标签页，请手动关闭，或点下方按钮离开。';
+      } else {
+        tip.textContent = '关闭接口没有生效。诊断：' + bad.map((s) => s.k + '=' + (s.err || '失败')).join(' · ');
+      }
     }
+
     exiting = false;
   }
 
@@ -2527,6 +2561,14 @@
   $('#btn-exit').addEventListener('click', openExitDialog);
   $('#btn-cancel-exit').addEventListener('click', closeExitDialog);
   $('#btn-confirm-exit').addEventListener('click', doExit);
+  $('#btn-back-bili').addEventListener('click', () => {
+    const before = location.href;
+    try { if (history.length > 1) history.back(); } catch (e) {}
+    // 后退无效时（没有上一页 / 被容器吞掉）直接跳 Toy 广场，保证能离开
+    setTimeout(() => {
+      if (location.href === before) location.replace('https://www.bilibili.com/toy');
+    }, 650);
+  });
   $('#btn-reenter').addEventListener('click', () => {
     $('#view-bye').classList.remove('active');
     $('#view-gate').classList.add('active');
