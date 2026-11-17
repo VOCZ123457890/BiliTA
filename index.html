@@ -925,8 +925,10 @@
 
       <div class="sect">
         <div class="label">连接方式 <span class="kstate" id="chan-state">自动</span></div>
-        <div class="desc">「自动」= 先直连智谱，被浏览器跨域拦住时<b>静默</b>改走中转，用户无感知。B站 App 内的 WebView 通常能直连。</div>
+        <div class="desc">平台已为本站开通 <code>open.bigmodel.cn</code> 外部域名权限，<b>默认直连</b>，不经任何中转。下面的中转地址只在直连异常时作兜底，留空即可。</div>
         <div class="personas" id="chan-opts"></div>
+        <button class="btn-line block" id="btn-diag" style="margin-top:10px;">🔍 诊断直连（推荐先点这个）</button>
+        <div class="desc" id="diag-out" style="margin:8px 0 0;line-height:1.7;display:none;"></div>
         <input class="field" id="relay-input" type="url" placeholder="中转地址（可选），如 https://bili-toy-relay.xxx.workers.dev" autocomplete="off" spellcheck="false" style="margin-top:10px;" />
         <div class="row" style="margin-top:8px;">
           <button class="btn-line" id="btn-relay-save" style="flex:1;">保存地址</button>
@@ -939,7 +941,7 @@
       <div class="sect">
         <div class="label">关于</div>
         <div class="desc" style="margin-bottom:0;line-height:1.8;">
-          BiliTA · <span id="ver-line">v3.7.0</span><br>
+          BiliTA · <span id="ver-line">v3.8.0</span><br>
           全称 BiliBiliToyAi · 直连智谱 BigModel。<br>
           对用户免费、无广告、不收集对话。Powered by Toy JS SDK.
         </div>
@@ -982,7 +984,7 @@
       <div class="sect" style="padding-bottom:4px;">
         <div class="label">关于</div>
         <div class="desc" style="margin-bottom:0;line-height:1.8;">
-          BiliTA · <span id="ver-line-2">v3.7.0</span><br>
+          BiliTA · <span id="ver-line-2">v3.8.0</span><br>
           对话只存本机，不上传服务器；生成内容由 AI 产生，请自行判断。
         </div>
       </div>
@@ -1072,7 +1074,8 @@
       <div class="sect">
         <div class="label">版本记录</div>
         <div class="desc" style="margin-bottom:0;line-height:1.9;">
-          <b>v3.7.0</b>（当前）· 改名 BiliTA / BiliBiliToyAi；支持发图片看图（GLM-4V）；付费档收进这里；流式渲染与 iPad 性能优化<br>
+          <b>v3.8.0</b>（当前）· 平台已开通 open.bigmodel.cn 域名权限，默认直连；设置里新增「诊断直连」<br>
+          <b>v3.7.0</b> · 改名 BiliTA / BiliBiliToyAi；支持发图片看图（GLM-4V）；付费档收进这里；流式渲染与 iPad 性能优化<br>
           <b>v3.6.0</b> · 多会话管理（最多 30 个，本地保存）+ 圆桌讨论（一题三答）+ 创作四件套（标题/简介/弹幕/封面）<br>
           <b>v3.5.3</b> · 退出修复：SDK 失败后自动 history.back 兜底，退出页显示诊断 + 返回广场按钮<br>
           <b>v3.5.2</b> · 空态/欢迎页布局优化：快捷卡片改用 SVG 图标，间距收紧<br>
@@ -1123,7 +1126,7 @@
 
   /* ---------------- 配置（部署时改这里） ---------------- */
   const CONFIG = {
-    VERSION: 'v3.7.0',
+    VERSION: 'v3.8.0',
     CHANNEL: 'debug',
 
     // 直连智谱开放平台（不经过任何中转）
@@ -2313,7 +2316,7 @@
   function friendlyError(err) {
     const s = String((err && err.message) || err || '');
     if (/abort/i.test(s)) return '已停止生成。';
-    if (/CORS_BLOCKED/.test(s)) return '浏览器拦下了这次请求：智谱接口不允许网页直连（跨域预检不通过），和 Key 无关。到设置 →「连接方式」填一个中转地址，之后会自动兜底。';
+    if (/CORS_BLOCKED/.test(s)) return '这次请求在容器层面被拦下了（域名白名单未生效或跨域预检不通过），和 Key 无关。到设置 →「连接方式」点一下「诊断直连」看具体原因；实在不行再填中转地址兜底。';
     if (/Failed to fetch|NetworkError|network/i.test(s)) return '网络请求失败，检查一下网络后重试。';
     if (/1113|余额不足/.test(s)) return '这个模型的账户余额不足。已尝试自动切到免费模型，还不行就在设置里换一个带「免费」标签的模型。';
     if (/1305|访问量过大/.test(s)) return '这个模型现在访问量太大，等几秒再试，或换个免费模型。';
@@ -2404,7 +2407,7 @@
     const hint = $('#relay-hint');
     if (hint) {
       if (!relayBase()) {
-        hint.innerHTML = '未填中转地址：只靠直连，在电脑/手机<b>浏览器</b>里打开会失败（B站 App 内一般没问题）。';
+        hint.innerHTML = '未填中转地址：只走直连（域名权限已开通，正常情况下无需中转）。';
       } else {
         hint.innerHTML = '当前中转：<b>' + esc(relayBase()) + '</b>' +
           (S.directBlocked ? ' ｜ 直连已被拦，已自动走中转' : '');
@@ -2892,6 +2895,78 @@
     ping();
     setKeyState('idle', '已清除本机保存的 Key。');
     toast('已清除');
+  });
+
+  /* ---------------- 直连诊断 ---------------- */
+  $('#btn-diag').addEventListener('click', async () => {
+    const box = $('#diag-out');
+    const btn = $('#btn-diag');
+    const key = apiKey();
+    const show = (html) => { box.style.display = 'block'; box.innerHTML = html; };
+
+    if (!key) {
+      show('⚠️ <b>没有可用的 Key</b>：先用内置额度或到上面填自己的 Key，再诊断。');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '诊断中…';
+    show('正在请求 <code>open.bigmodel.cn</code> …');
+
+    const t0 = Date.now();
+    let res = null, err = null;
+    try {
+      res = await withTimeout(fetch(CONFIG.API_BASE + '/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify({
+          model: 'glm-4-flash-250414',
+          messages: [{ role: 'user', content: 'hi' }],
+          max_tokens: 1,
+          stream: false
+        })
+      }), 20000, 'timeout');
+    } catch (e) { err = e; }
+    const ms = Date.now() - t0;
+
+    btn.disabled = false;
+    btn.textContent = '🔍 诊断直连（推荐先点这个）';
+
+    if (err) {
+      const isTimeout = String(err && err.message || err).indexOf('timeout') >= 0;
+      show(
+        '❌ <b>' + (isTimeout ? '请求超时' : '被拦下了') + '</b>（' + ms + ' ms）<br>' +
+        (isTimeout
+          ? '网络没通到智谱，可能是当前网络受限，换个网再试一次。'
+          : '请求在浏览器/容器层面就被挡掉了（跨域预检不通过或域名不在白名单）。<br>' +
+            '若你还看到这个提示，说明该设备的域名权限尚未生效：① 确认平台侧加的域名是 <code>open.bigmodel.cn</code> 纯主机名、不带路径；② 退出重进 Toy 让新权限生效；③ 仍然不行就联系客服确认是否按「域名」而非「页面」开通。')
+      );
+      toast('直连没通');
+      return;
+    }
+
+    if (res.status === 200) {
+      show('✅ <b>直连正常</b>（HTTP 200，' + ms + ' ms）<br>域名权限已生效，模型可直接调用，不需要中转。');
+      setOnline(true, '直连正常 · ' + modelName(S.model));
+      toast('直连正常');
+      return;
+    }
+
+    let detail = '';
+    try {
+      const j = await res.json();
+      detail = (j && j.error && (j.error.message || j.error.code)) || '';
+    } catch (e) {}
+
+    if (res.status === 401) {
+      show('🔑 <b>域名已通，但 Key 无效</b>（HTTP 401，' + ms + ' ms）<br>说明网络链路没问题，换一个有效的 Key 即可。');
+    } else if (res.status === 429) {
+      show('⏳ <b>域名已通，但被限流/额度不足</b>（HTTP 429，' + ms + ' ms）<br>换个免费模型或稍后再试。');
+    } else {
+      show('⚠️ <b>域名已通，接口返回 HTTP ' + res.status + '</b>（' + ms + ' ms）' +
+        (detail ? '<br><code>' + esc(String(detail)) + '</code>' : ''));
+    }
+    toast('HTTP ' + res.status);
   });
 
   /* ---------------- 中转地址 ---------------- */
