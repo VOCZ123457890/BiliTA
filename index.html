@@ -498,21 +498,6 @@
   .bye h2{margin:0 0 8px;font-size:21px;font-weight:900;}
   .bye p{margin:0 0 22px;font-size:12.5px;color:var(--sub);line-height:1.7;max-width:300px;}
 
-  /* 退出中遮罩：调 SDK 关闭页面时的短暂过渡，避免用户重复点击 */
-  #exiting{
-    position:fixed;inset:0;z-index:999;display:none;
-    flex-direction:column;align-items:center;justify-content:center;gap:16px;
-    background:rgba(255,255,255,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  }
-  #exiting.on{display:flex;}
-  #exiting .spin{
-    width:34px;height:34px;border-radius:50%;
-    border:3px solid var(--brand-line);border-top-color:var(--brand);
-    animation:exit-spin .8s linear infinite;
-  }
-  @keyframes exit-spin{to{transform:rotate(360deg);}}
-  #exiting .t{font-size:13px;font-weight:700;color:var(--ink-2);letter-spacing:.3px;}
-  #exiting .s{font-size:11px;color:var(--sub);}
 
   /* ============ 大屏细节（档位由 JS 写入 data-form） ============ */
   html[data-form="tablet"] .topbar{padding:13px 20px;}
@@ -781,9 +766,6 @@
           <button class="icon-btn" id="btn-rail-settings" aria-label="设置">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
           </button>
-          <button class="icon-btn danger" id="btn-rail-exit" aria-label="退出">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><path d="M12 2v10"/></svg>
-          </button>
         </div>
       </aside>
 
@@ -806,9 +788,6 @@
           </button>
           <button class="icon-btn" id="btn-settings" aria-label="设置">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-          </button>
-          <button class="icon-btn danger" id="btn-exit" aria-label="退出">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><path d="M12 2v10"/></svg>
           </button>
         </div>
 
@@ -857,24 +836,6 @@
 
     </div>
   </section>
-
-  <!-- ================= 退出页（仅 Web 兜底） ================= -->
-  <section class="view" id="view-bye">
-    <div class="bye">
-      <div class="m" data-mascot></div>
-      <h2>已退出 BiliTA</h2>
-      <p id="bye-tip">感谢使用。对用户永久免费、无广告，模型额度由作者垫付。</p>
-      <button class="cta" style="max-width:260px;height:46px;" id="btn-reenter">重新进入</button>
-      <button id="btn-back-bili" style="margin-top:10px;max-width:260px;width:100%;height:44px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--ink-2);font-size:13px;font-weight:700;cursor:pointer;">返回 B站 Toy 广场</button>
-    </div>
-  </section>
-
-  <!-- 退出中：调 toy.closeBrowser() 的过渡遮罩 -->
-  <div id="exiting">
-    <div class="spin"></div>
-    <div class="t">正在退出…</div>
-    <div class="s">正在调用 Toy 关闭接口</div>
-  </div>
 
   <!-- ================= 设置面板 ================= -->
   <div class="mask" id="mask"></div>
@@ -925,9 +886,9 @@
 
       <div class="sect">
         <div class="label">连接方式 <span class="kstate" id="chan-state">自动</span></div>
-        <div class="desc">平台已为本站开通 <code>open.bigmodel.cn</code> 外部域名权限，<b>默认直连</b>，不经任何中转。下面的中转地址只在直连异常时作兜底，留空即可。</div>
+        <div class="desc">实测结果：域名已放行（请求能到达智谱），但响应缺跨域许可头，浏览器读不到 → <b>直连不可用</b>。填一个中转地址即可，<b>Cloudflare Workers 免费版</b>每月 10 万次请求，够用（部署方法找作者要，或看 GitHub 仓库 worker.js 顶部注释）。</div>
         <div class="personas" id="chan-opts"></div>
-        <button class="btn-line block" id="btn-diag" style="margin-top:10px;">🔍 诊断直连（推荐先点这个）</button>
+        <button class="btn-line block" id="btn-diag" style="margin-top:10px;">🔍 诊断连通（看域名到底放行没）</button>
         <div class="desc" id="diag-out" style="margin:8px 0 0;line-height:1.7;display:none;"></div>
         <input class="field" id="relay-input" type="url" placeholder="中转地址（可选），如 https://bili-toy-relay.xxx.workers.dev" autocomplete="off" spellcheck="false" style="margin-top:10px;" />
         <div class="row" style="margin-top:8px;">
@@ -941,15 +902,12 @@
       <div class="sect">
         <div class="label">关于</div>
         <div class="desc" style="margin-bottom:0;line-height:1.8;">
-          BiliTA · <span id="ver-line">v3.8.1</span><br>
+          BiliTA · <span id="ver-line">v3.9.0</span><br>
           全称 BiliBiliToyAi · 直连智谱 BigModel。<br>
           对用户免费、无广告、不收集对话。Powered by Toy JS SDK.
         </div>
       </div>
 
-      <div class="sect" style="padding-bottom:4px;">
-        <button class="btn-line block" id="btn-exit-2" style="color:#E0455A;">退出 Toy</button>
-      </div>
     </div>
   </div>
 
@@ -984,7 +942,7 @@
       <div class="sect" style="padding-bottom:4px;">
         <div class="label">关于</div>
         <div class="desc" style="margin-bottom:0;line-height:1.8;">
-          BiliTA · <span id="ver-line-2">v3.8.1</span><br>
+          BiliTA · <span id="ver-line-2">v3.9.0</span><br>
           对话只存本机，不上传服务器；生成内容由 AI 产生，请自行判断。
         </div>
       </div>
@@ -1074,7 +1032,7 @@
       <div class="sect">
         <div class="label">版本记录</div>
         <div class="desc" style="margin-bottom:0;line-height:1.9;">
-          <b>v3.8.1</b>（当前）· 更换作者 API Key<br>
+          <b>v3.9.0</b>（当前）· 实测半通：移除退出按钮（容器自带关闭）；中转优先；诊断文案更新<br>\n          <b>v3.8.1</b> · 更换作者 API Key<br>
           <b>v3.8.0</b> · 平台已开通 open.bigmodel.cn 域名权限，默认直连；设置里新增「诊断直连」<br>
           <b>v3.7.0</b> · 改名 BiliTA / BiliBiliToyAi；支持发图片看图（GLM-4V）；付费档收进这里；流式渲染与 iPad 性能优化<br>
           <b>v3.6.0</b> · 多会话管理（最多 30 个，本地保存）+ 圆桌讨论（一题三答）+ 创作四件套（标题/简介/弹幕/封面）<br>
@@ -1100,19 +1058,6 @@
     </div>
   </div>
 
-  <!-- ================= 退出确认 ================= -->
-  <div class="dialog" id="dialog-exit">
-    <div class="d-ic">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><path d="M12 2v10"/></svg>
-    </div>
-    <h4>要退出吗？</h4>
-    <p>确认后会调用 Toy 的关闭接口，直接关掉当前页面并回到 B站。对话记录留在本机，下次回来还能接着聊。</p>
-    <div class="acts">
-      <button class="cancel" id="btn-cancel-exit">再聊会儿</button>
-      <button class="ok" id="btn-confirm-exit">退出 Toy</button>
-    </div>
-  </div>
-
   <div class="toast" id="toast"></div>
 </div>
 
@@ -1127,7 +1072,7 @@
 
   /* ---------------- 配置（部署时改这里） ---------------- */
   const CONFIG = {
-    VERSION: 'v3.8.1',
+    VERSION: 'v3.9.0',
     CHANNEL: 'debug',
 
     // 直连智谱开放平台（不经过任何中转）
@@ -2376,11 +2321,10 @@
     const hasRelay = !!relayBase();
     if (S.channel === 'relay' || usingLegacy()) return hasRelay ? 'relay' : (hasKey ? 'direct' : 'demo');
     if (S.channel === 'direct') return hasKey ? 'direct' : (hasRelay ? 'relay' : 'demo');
-    // auto：直连优先
-    if (!hasKey && hasRelay) return 'relay';                 // 自己没有 Key，借用中转那枚
-    if (hasKey && S.directBlocked && hasRelay) return 'relay'; // 本会话已被拦过，别重复撞墙
+    // auto：中转优先（实测 Toy 容器内域名已放行但缺 CORS 头，直连读不到响应）
+    if (hasRelay) return 'relay';
     if (hasKey) return 'direct';
-    return hasRelay ? 'relay' : 'demo';
+    return 'demo';
   }
 
   function endpointFor(via) {
@@ -2408,7 +2352,7 @@
     const hint = $('#relay-hint');
     if (hint) {
       if (!relayBase()) {
-        hint.innerHTML = '未填中转地址：只走直连（域名权限已开通，正常情况下无需中转）。';
+        hint.innerHTML = '未填中转地址：当前直连<b>读不到响应</b>（域名放行了但缺跨域头），对话会不可用。填一个 Cloudflare Workers 地址即可，免费。';
       } else {
         hint.innerHTML = '当前中转：<b>' + esc(relayBase()) + '</b>' +
           (S.directBlocked ? ' ｜ 直连已被拦，已自动走中转' : '');
@@ -2590,10 +2534,8 @@
     if (pill) pill.textContent = modelName(S.model);
   }
 
-  /* ---------------- 进入 / 退出 ---------------- */
+  /* ---------------- 进入 ---------------- */
   function enterChat() {
-    $('#view-gate').classList.remove('active');
-    $('#view-bye').classList.remove('active');
     $('#view-chat').classList.add('active');
     S.messages = loadChat();
     renderAll();
@@ -2640,107 +2582,6 @@
     if (rn) rn.textContent = nick;
     if (ra) ra.src = src;
     $('#uid-line').textContent = '本 Toy 内标识：' + (S.profile && S.profile.toyOpenId ? S.profile.toyOpenId.slice(0, 10) + '…' : (S.guest ? '游客（未授权）' : '—'));
-  }
-
-  function openExitDialog() { $('#dialog-exit').classList.add('on'); $('#mask').classList.add('on'); }
-  function closeExitDialog() { $('#dialog-exit').classList.remove('on'); $('#mask').classList.remove('on'); }
-
-  /* ---------------- 退出：真实关闭页面 ---------------- */
-  let exiting = false;
-  const showExiting = () => $('#exiting').classList.add('on');
-  const hideExiting = () => $('#exiting').classList.remove('on');
-
-  const isPreviewPage = () => /^\/toy\/preview(?:\/|$)/.test(location.pathname);
-
-  function errText(e) {
-    if (!e) return 'unknown';
-    return String(e.code || e.message || e.name || e).slice(0, 60);
-  }
-
-  /**
-   * 依次尝试三种关闭方式，并记录每一步的真实结果。
-   * ① toy.closeBrowser() —— 官方接口，底层是 jsb 调用原生关闭
-   * ② history.back()      —— App 内 WebView 通常有上一页（Toy 详情/广场）
-   * ③ window.close()      —— 仅脚本打开的窗口才允许
-   * 返回的 steps 会显示在退出页上，点一次就知道卡在哪一步。
-   */
-  async function tryCloseAll() {
-    const steps = [];
-
-    if (hasToy() && typeof toy.closeBrowser === 'function') {
-      try {
-        await withTimeout(Promise.resolve(toy.closeBrowser()), 1500, 'timeout');
-        steps.push({ k: 'toy.closeBrowser', ok: true, err: '' });
-        return { ok: true, steps };
-      } catch (e) {
-        steps.push({ k: 'toy.closeBrowser', ok: false, err: errText(e) });
-      }
-    } else {
-      steps.push({ k: 'toy.closeBrowser', ok: false, err: 'SDK 未加载' });
-    }
-
-    if (history.length > 1) {
-      try {
-        history.back();
-        steps.push({ k: 'history.back', ok: true, err: '' });
-        return { ok: true, steps, soft: true };
-      } catch (e) {
-        steps.push({ k: 'history.back', ok: false, err: errText(e) });
-      }
-    } else {
-      steps.push({ k: 'history.back', ok: false, err: '无历史记录' });
-    }
-
-    try {
-      window.close();
-      steps.push({ k: 'window.close', ok: true, err: '' });
-    } catch (e) {
-      steps.push({ k: 'window.close', ok: false, err: errText(e) });
-    }
-
-    return { ok: false, steps };
-  }
-
-  async function doExit() {
-    if (exiting) return;
-    exiting = true;
-
-    // 关闭前把偏好写回云端（仅登录态有效）
-    try { savePrefs(); } catch (e) {}
-
-    closeExitDialog();
-    closeSheet();
-    closeLegacy();
-
-    // 关闭很快时，遮罩刚渲染就被销毁会闪一下，所以延迟出现
-    const overlayTimer = setTimeout(showExiting, 140);
-
-    const res = await tryCloseAll();
-    if (res.ok) await sleep(res.soft ? 400 : 700);
-
-    clearTimeout(overlayTimer);
-    hideExiting();
-
-    // 能走到这里说明页面仍然存在：展示退出页 + 真实诊断
-    $('#view-chat').classList.remove('active');
-    $('#view-gate').classList.remove('active');
-    $('#view-bye').classList.add('active');
-
-    const tip = $('#bye-tip');
-    if (tip) {
-      const bad = res.steps.filter((s) => !s.ok);
-      if (res.ok) {
-        tip.textContent = '已请求关闭。如果页面还在，说明当前容器没有响应关闭指令，可点下方「返回 B站 Toy 广场」离开。对话记录已保存。';
-      } else if (isPreviewPage()) {
-        tip.textContent = '当前是作者预览页（/toy/preview/），平台规定预览页禁止关闭页面，这是正常现象，发布后在正式入口点退出才会真正关闭。';
-      } else if (!hasToy()) {
-        tip.textContent = '当前没有检测到 B站 Toy SDK（普通浏览器直接打开），网页无权关闭标签页，请手动关闭，或点下方按钮离开。';
-      } else {
-        tip.textContent = '关闭接口没有生效。诊断：' + bad.map((s) => s.k + '=' + (s.err || '失败')).join(' · ');
-      }
-    }
-
-    exiting = false;
   }
 
   /* ---------------- 设置面板 ---------------- */
@@ -2931,7 +2772,7 @@
     const ms = Date.now() - t0;
 
     btn.disabled = false;
-    btn.textContent = '🔍 诊断直连（推荐先点这个）';
+    btn.textContent = '🔍 诊断连通（看域名到底放行没）';
 
     if (err) {
       const isTimeout = String(err && err.message || err).indexOf('timeout') >= 0;
@@ -2940,7 +2781,7 @@
         (isTimeout
           ? '网络没通到智谱，可能是当前网络受限，换个网再试一次。'
           : '请求在浏览器/容器层面就被挡掉了（跨域预检不通过或域名不在白名单）。<br>' +
-            '若你还看到这个提示，说明该设备的域名权限尚未生效：① 确认平台侧加的域名是 <code>open.bigmodel.cn</code> 纯主机名、不带路径；② 退出重进 Toy 让新权限生效；③ 仍然不行就联系客服确认是否按「域名」而非「页面」开通。')
+            '注意：就算域名放行了，浏览器读不到响应（缺 CORS 头）也会这样报——这与 Key 无关。想确认是哪种情况，打开「网络连通性测试」这个 Toy 看结论。')
       );
       toast('直连没通');
       return;
@@ -3056,7 +2897,7 @@
   }
   function closeLegacy() {
     legacySheet.classList.remove('on');
-    if (!$('#dialog-exit').classList.contains('on') && !sheet.classList.contains('on')) {
+    if (!sheet.classList.contains('on')) {
       mask.classList.remove('on');
     }
   }
@@ -3158,7 +2999,6 @@
     toast('当前对话已清空');
   });
 
-  $('#btn-exit-2').addEventListener('click', () => { closeSheet(); openExitDialog(); });
 
   /* ---------------- 隐藏入口：连点吉祥物 7 次 ---------------- */
   let taps = 0, tapTimer = null;
@@ -3207,8 +3047,6 @@
   });
   const railSet = $('#btn-rail-settings');
   if (railSet) railSet.addEventListener('click', openSheet);
-  const railExit = $('#btn-rail-exit');
-  if (railExit) railExit.addEventListener('click', openExitDialog);
 
   /* ---------------- 工作台 / 圆桌 / 四件套 ---------------- */
   const railKit = $('#btn-rail-kit');
@@ -3242,27 +3080,10 @@
     savePrefs();
   }));
 
-  mask.addEventListener('click', () => { closeExitDialog(); closeSheet(); closeLegacy(); closeMenu(); closeKit(); });
-  $('#btn-exit').addEventListener('click', openExitDialog);
-  $('#btn-cancel-exit').addEventListener('click', closeExitDialog);
-  $('#btn-confirm-exit').addEventListener('click', doExit);
-  $('#btn-back-bili').addEventListener('click', () => {
-    const before = location.href;
-    try { if (history.length > 1) history.back(); } catch (e) {}
-    // 后退无效时（没有上一页 / 被容器吞掉）直接跳 Toy 广场，保证能离开
-    setTimeout(() => {
-      if (location.href === before) location.replace('https://www.bilibili.com/toy');
-    }, 650);
-  });
-  $('#btn-reenter').addEventListener('click', () => {
-    $('#view-bye').classList.remove('active');
-    $('#view-gate').classList.add('active');
-    S.messages = []; renderAll();
-  });
-
+  mask.addEventListener('click', () => { closeSheet(); closeLegacy(); closeMenu(); closeKit(); });
   // 键盘 Esc
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { closeExitDialog(); closeSheet(); closeLegacy(); closeMenu(); closeKit(); }
+    if (e.key === 'Escape') { closeSheet(); closeLegacy(); closeMenu(); closeKit(); }
   });
 
   /* ============================================================
@@ -3488,7 +3309,7 @@
 
   /* ---------------- 工作台 / 四件套面板 ---------------- */
   function syncMask() {
-    const any = $$('.sheet').some((el) => el.classList.contains('on')) || $('#dialog-exit').classList.contains('on');
+    const any = $$('.sheet').some((el) => el.classList.contains('on'));
     if (any) mask.classList.add('on'); else mask.classList.remove('on');
   }
   function openMenu() {
