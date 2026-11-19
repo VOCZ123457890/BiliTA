@@ -70,7 +70,9 @@ export default {
     }
 
     const url = new URL(request.url);
-    const path = url.pathname.replace(/\/+$/, '') || '/';
+    let path = url.pathname;
+    while (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
+    if (path === '') path = '/';
 
     if (path === '/health' || path === '/') {
       return json({
